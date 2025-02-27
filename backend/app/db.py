@@ -23,10 +23,16 @@ FIREBASE_CREDENTIALS_BASE64 = os.getenv("FIREBASE_CREDENTIALS_BASE64")
 async def init_redis():
     """Initialize Redis connection asynchronously."""
     try:
-        redis_conn = await redis.from_url(
-            url=REDIS_URL,
+        # Extract host and port from REDIS_URL (redis://host:port)
+        host_port = REDIS_URL.split("redis://")[1].split("/")[0]
+        host, port = host_port.split(":")
+
+        redis_conn = redis.Redis(
+            host=host,
+            port=int(port),
             password=REDIS_PASSWORD,
             decode_responses=True,
+            ssl=False,  # Explicitly disable SSL
         )
         logging.info("✅ Connected to Redis")
         return redis_conn
