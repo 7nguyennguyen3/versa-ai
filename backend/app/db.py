@@ -1,10 +1,9 @@
 import redis.asyncio as redis
 from dotenv import load_dotenv
-from session_manager_firebase import SessionManager
-from session_manager_firebase import SessionManager as SessionManagerFirebase
+from .session_manager_firebase import SessionManager
 from contextlib import asynccontextmanager
-from bg_worker import background_flush_task
-from bg_pdf_worker import process_pdf_worker
+from .bg_worker import background_flush_task
+from .bg_pdf_worker import process_pdf_worker
 import os
 import logging
 import asyncio
@@ -65,7 +64,7 @@ async def lifespan(app):
     # Initialize SessionManager with Redis
     app.state.session_manager = SessionManager(firestore_db, app.state.redis_instance)
     if firestore_db:
-        app.state.session_manager_firebase = SessionManagerFirebase(firestore_db, app.state.redis_instance)
+        app.state.session_manager_firebase = SessionManager(firestore_db, app.state.redis_instance)
     else:
         app.state.session_manager_firebase = None
 

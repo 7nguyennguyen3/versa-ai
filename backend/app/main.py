@@ -2,11 +2,11 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from db import lifespan
+from app.db import lifespan
 from dotenv import load_dotenv
 import logging
 import os
-from routes import router 
+from app.routes import router 
 load_dotenv()
 
 # Get log level from environment variable or default to INFO

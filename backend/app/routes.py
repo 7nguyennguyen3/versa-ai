@@ -1,14 +1,13 @@
 from fastapi import APIRouter, Request, status, HTTPException, Depends
-from fastapi.params import Header
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 import json
 import asyncio
 import logging
 import os
-from pinecone_retriever_chain import create_chain
+from .pinecone_retriever_chain import create_chain
 from firebase_admin import firestore  
-from verify_access import get_current_user
+from .verify_access import get_current_user
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
