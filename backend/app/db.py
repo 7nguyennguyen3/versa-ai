@@ -24,7 +24,11 @@ async def init_redis():
     """Initialize Redis connection asynchronously."""
     try:
         redis_conn = await redis.from_url(
-            url=REDIS_URL, password=REDIS_PASSWORD, decode_responses=True
+            url=REDIS_URL,
+            password=REDIS_PASSWORD,
+            decode_responses=True,
+            ssl=True,  # Enable SSL/TLS
+            ssl_cert_reqs=None,  # Optional: Set to 'required' if client certs are needed
         )
         logging.info("✅ Connected to Redis")
         return redis_conn
