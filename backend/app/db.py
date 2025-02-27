@@ -27,8 +27,6 @@ async def init_redis():
             url=REDIS_URL,
             password=REDIS_PASSWORD,
             decode_responses=True,
-            ssl=False,  # Enable SSL/TLS
-            ssl_cert_reqs=None,  # Optional: Set to 'required' if client certs are needed
         )
         logging.info("✅ Connected to Redis")
         return redis_conn
