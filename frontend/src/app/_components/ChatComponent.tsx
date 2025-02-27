@@ -1,0 +1,156 @@
+"use client";
+import { Button } from "@/components/ui/button";
+import { Send } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { sendMessage } from "../_hooks/useChatSend";
+import { useAppStore } from "../_store/useAppStore";
+import GearSettings from "./GearSettings";
+
+interface ChatComponentProps {
+  userId: string | null;
+}
+
+const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
+  const { messages, isChatLoading, fetchChatOptions, fetchPdfOptions } =
+    useAppStore();
+
+  const [message, setMessage] = useState("");
+  const [token, setToken] = useState<string | null>(null);
+  const [streamingResponse, setStreamingResponse] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (userId) {
+      fetchChatOptions(userId);
+      fetchPdfOptions(userId);
+    }
+  }, [userId, fetchChatOptions, fetchPdfOptions]);
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const response = await fetch("/api/auth/get-token");
+        const data = await response.json();
+        if (data.token) {
+          setToken(data.token);
+        }
+      } catch (error) {
+        console.error("Failed to fetch token:", error);
+      }
+    };
+
+    fetchToken();
+  }, []);
+
+  const handleSendMessage = async () => {
+    if (!message.trim() || !token) return;
+
+    try {
+      await sendMessage({
+        message,
+        userId,
+        token,
+        onStreamUpdate: setStreamingResponse,
+        onStreamComplete: (finalResponse) => {
+          setStreamingResponse(""); // Clear streaming data
+        },
+      });
+
+      setMessage("");
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
+  };
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 130)}px`;
+    }
+  }, [message]);
+
+  useEffect(() => {
+    const messagesContainer = messagesEndRef.current?.parentElement;
+    if (messagesContainer) {
+      messagesContainer.scrollTo({
+        top: messagesContainer.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [messages, isChatLoading, streamingResponse]);
+
+  return (
+    <div className="bg-white w-full flex justify-center h-screen">
+      <div className="max-w-[800px] w-full h-screen flex flex-col p-3">
+        <div className="flex flex-col bg-white w-full h-full">
+          {/* Chat Messages */}
+          <div className="px-6 gap-5 custom-scrollbar flex flex-col flex-grow overflow-y-auto h-0 mt-2">
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`inline-block max-w-[75%] lg:max-w-[500px] p-[10px] rounded-xl text-xs shadow-md break-words ${
+                  msg.role === "human"
+                    ? "bg-gradient-to-r from-blue-400 to-blue-600 text-white self-end ml-auto"
+                    : "bg-gradient-to-r from-gray-100 to-gray-300 text-black self-start"
+                }`}
+              >
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {msg.content}
+                </ReactMarkdown>
+              </div>
+            ))}
+
+            {isChatLoading && !streamingResponse && (
+              <div className="max-w-[75%] p-4 rounded-2xl bg-gray-200 text-black self-start flex items-center space-x-2">
+                <span className="animate-bounce">.</span>
+                <span className="animate-bounce delay-100">.</span>
+                <span className="animate-bounce delay-200">.</span>
+              </div>
+            )}
+            {streamingResponse && (
+              <div className="max-w-[75%] p-4 rounded-2xl bg-gray-200 text-black self-start">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {streamingResponse}
+                </ReactMarkdown>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Chat Input */}
+          <div className="p-[2px] bg-white flex flex-col items-center w-full border rounded-lg">
+            <textarea
+              ref={textareaRef}
+              className="text-xs p-2 w-full focus:border-none focus:outline-none custom-scrollbar"
+              placeholder="Type your message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) =>
+                e.key === "Enter" && !e.shiftKey && handleSendMessage()
+              }
+              disabled={isChatLoading}
+              style={{ minHeight: "40px", maxHeight: "130px" }}
+            />
+            <div className="flex items-center justify-between w-[98%] mb-1">
+              <GearSettings userId={userId} />
+
+              <Button
+                onClick={handleSendMessage}
+                disabled={isChatLoading}
+                className="p-3 h-5 w-9 rounded-lg"
+              >
+                <Send className="rotate-45" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ChatComponent;

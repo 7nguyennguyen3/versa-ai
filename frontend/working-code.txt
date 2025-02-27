@@ -1,0 +1,22 @@
+// {selectedPdf && (
+//     <div className="mt-4 w-full flex justify-center">
+//       <iframe
+//         src={selectedPdf}
+//         className="w-full max-w-3xl h-[500px] border border-gray-300 shadow-md"
+//       />
+//     </div>
+//   )}
+
+// Commenting out the API request
+    // const fetchPdfs = async () => {
+    //   try {
+    //     const response = await axios.get(`/api/pdf/view?userId=${userId}`);
+    //     setPdfs(response.data.pdfs);
+    //   } catch (err) {
+    //     setError("Failed to load PDFs.");
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
+
+    // fetchPdfs();
