@@ -49,7 +49,7 @@ async def upsert_pdf(request: Request, body: PDFIngestRequest, user_id: str = De
         "userId": body.userId
     })
 
-    logging.debug(f"🚀 Queuing PDF ingestion task for user {body.userId} with PDF ID {body.pdfId}")
+    logging.info(f"🚀 Queuing PDF ingestion task for user {body.userId} with PDF ID {body.pdfId}")
     redis_instance = request.app.state.redis_instance
     await redis_instance.lpush("pdf_ingestion_queue", task_data)
 
@@ -66,7 +66,7 @@ async def chat_send(request: Request, message_request: MessageRequest, user_id: 
     chat_session_id = message_request.chat_session_id
     user_id = message_request.userId
 
-    logging.debug(f"🚀 Received message for chat session {chat_session_id} from user {user_id}")
+    logging.info(f"🚀 Received message for chat session {chat_session_id} from user {user_id}")
 
     user_exists = await verify_user(user_id)
     if not user_exists:
@@ -132,7 +132,7 @@ async def chat_stream(request: Request, chat_session_id: str):
                     pdf_id = data.get("pdf_id", "")
                     user_id = data.get("userId", "")
 
-                    logging.debug(f"Processing user message: {user_message}")
+                    logging.info(f"Processing user message: {user_message}")
 
                     chat_history = await session_manager.get_history(chat_session_id)
 
@@ -165,7 +165,7 @@ async def chat_stream(request: Request, chat_session_id: str):
 
                     await session_manager.add_message(chat_session_id, user_id, pdf_id, "human", str(user_message))
                     await session_manager.add_message(chat_session_id, user_id, pdf_id, "ai", ai_response)
-                    logging.debug(f"Stored AI response for session {chat_session_id}")
+                    logging.info(f"Stored AI response for session {chat_session_id}")
 
                     yield "event: end\ndata: \n\n"
 
@@ -198,7 +198,7 @@ async def demo_chat_send(request: Request, messageRequest: DemoMessageRequest):
     chat_session_id = messageRequest.chat_session_id
     pdf_id = messageRequest.pdf_id
 
-    logging.debug(f"🚀 Received message for chat session {chat_session_id}")
+    logging.info(f"🚀 Received message for chat session {chat_session_id}")
 
     # Ensure the queue exists for this session
     if chat_session_id not in message_queues:

@@ -1,5 +1,7 @@
+// sendMessage.ts
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
+import { flushSync } from "react-dom";
 import { useAppStore } from "../_store/useAppStore";
 
 interface SendMessageProps {
@@ -35,7 +37,6 @@ export const sendMessage = async ({
 
   const sessionId: string = currentChatId ?? uuidv4();
 
-  // Create new chat session if needed
   if (!currentChatId) {
     const newSession = {
       chat_session_id: sessionId,
@@ -58,11 +59,7 @@ export const sendMessage = async ({
         pdf_id: currentPdfId || selectedPdf?.pdfId,
         userId,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      { headers: { Authorization: `Bearer ${token}` } }
     );
 
     const eventSource = new EventSource(
@@ -70,18 +67,33 @@ export const sendMessage = async ({
     );
 
     let botResponse = "";
+    let buffer = "";
+    let lastUpdate = Date.now();
 
     eventSource.onmessage = (event) => {
-      botResponse += event.data.replace(/<br>/g, "\n");
-      onStreamUpdate(botResponse); // Use callback instead of store update
+      buffer += event.data.replace(/<br>/g, "\n");
+
+      // Throttle updates to avoid excessive re-renders
+      const now = Date.now();
+      if (now - lastUpdate >= 100) {
+        // Update every 100ms
+        botResponse += buffer;
+        onStreamUpdate(botResponse);
+        buffer = "";
+        lastUpdate = now;
+      }
     };
 
     eventSource.addEventListener("end", () => {
+      if (buffer) {
+        botResponse += buffer;
+        onStreamUpdate(botResponse);
+      }
       eventSource.close();
       setChatLoading(false);
       const finalContent = botResponse.replace(/<br>/g, "\n");
       addMessage({ role: "ai", content: finalContent });
-      onStreamComplete(finalContent); // Final update
+      onStreamComplete(finalContent);
     });
 
     eventSource.onerror = (error) => {

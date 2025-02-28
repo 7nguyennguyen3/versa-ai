@@ -1,5 +1,14 @@
-import { RoadmapProps } from "../roadmap/page";
 import { PDFDocument } from "./interface";
+
+export interface RoadmapProps {
+  devName: string;
+  status: "In Progress" | "Completed" | "Not Started" | "Skipped" | "On Hold";
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  comments?: string;
+  priority: "Low" | "Medium" | "High";
+}
 
 export const APP_ROADMAP: RoadmapProps[] = [
   {
@@ -9,6 +18,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date("02/24/2025"),
     endDate: new Date("02/24/2025"),
     comments: "",
+    priority: "High",
   },
   {
     devName: "Authorization Header for Non-SSE Routes",
@@ -17,6 +27,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date("02/23/2025"),
     endDate: new Date("02/24/2025"),
     comments: "",
+    priority: "High",
   },
   {
     devName: "Basic Rate Limiting",
@@ -25,6 +36,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date("02/24/2025"),
     endDate: new Date("02/24/2025"),
     comments: "",
+    priority: "Medium",
   },
   {
     devName: "Demo Chat",
@@ -33,31 +45,43 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date("02/24/2025"),
     endDate: new Date("02/25/2025"),
     comments: "",
+    priority: "Medium",
   },
   {
-    devName:
-      "Front-end field validation --> userId, pdfId, message, chat_session_id, other",
+    devName: "Fix React State Update Limit",
+    status: "Completed",
+    description: "React state update too frequently during SSE.",
+    startDate: new Date("02/27/2025"),
+    endDate: new Date("02/28/2025"),
+    comments: "",
+    priority: "High",
+  },
+  {
+    devName: "Front-end field validation --> pdfId, chat_session_id,",
     status: "Not Started",
     description: "Implement front-end validation for various fields.",
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
+    priority: "Medium",
   },
   {
     devName: "Github Login",
-    status: "Not Started",
+    status: "Completed",
     description: "Add GitHub OAuth login functionality.",
-    startDate: new Date(),
-    endDate: new Date(),
+    startDate: new Date("02/28/2025"),
+    endDate: new Date("02/28/2025"),
     comments: "",
+    priority: "Medium",
   },
   {
-    devName: "Reduce Bandwith Usage, Cache PDFs/ Other Strategies",
+    devName: "Reduce Bandwidth Usage, Cache PDFs/ Other Strategies",
     status: "Not Started",
     description: "Reduce bandwidth usage by caching PDFs.",
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
+    priority: "High",
   },
   {
     devName: "Rename Chat Session to be more descriptive",
@@ -66,6 +90,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
+    priority: "Low",
   },
   {
     devName: "Optimize Uploaded PDF",
@@ -75,6 +100,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
+    priority: "Medium",
   },
   {
     devName: "Custom No PDF Chat",
@@ -83,6 +109,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
+    priority: "Low",
   },
   {
     devName: "Enhanced Data Parsing/Display for Chat",
@@ -91,6 +118,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
+    priority: "Medium",
   },
   {
     devName: "Cookies Auth for SSE Route",
@@ -99,6 +127,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
+    priority: "High",
   },
   {
     devName: "CSRF Protection",
@@ -107,14 +136,16 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
+    priority: "High",
   },
   {
-    devName: "Create test to stimulate handling 100+ users",
+    devName: "Create test to simulate handling 100+ users",
     status: "Not Started",
     description: "Create a test to simulate handling 100+ users.",
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
+    priority: "Medium",
   },
   {
     devName: "Implement Custom Memory",
@@ -123,8 +154,8 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
+    priority: "Medium",
   },
-
   {
     devName: "UI Improvement",
     status: "Not Started",
@@ -132,8 +163,8 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
+    priority: "Medium",
   },
-
   {
     devName: "Advanced Rate Limiting",
     status: "Not Started",
@@ -141,6 +172,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
+    priority: "High",
   },
   {
     devName: "Reverse Proxy",
@@ -149,6 +181,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
+    priority: "Medium",
   },
 ];
 

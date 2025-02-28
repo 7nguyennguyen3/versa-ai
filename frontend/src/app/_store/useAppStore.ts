@@ -25,6 +25,7 @@ interface AppStoreState {
   // Actions
   // Chat Actions
   addMessage: (message: ChatMessage) => void;
+  appendMessagePart: (content: string) => void;
   setChatData: (data: string) => void;
   setChatLoading: (loading: boolean) => void;
   updateMessagesFromHistory: (history: ChatMessage[]) => void;
@@ -59,7 +60,22 @@ export const useAppStore = create<AppStoreState>((set) => ({
 
   // Actions
   addMessage: (message) =>
-    set((state) => ({ messages: [...state.messages, message] })),
+    set((state) => ({
+      messages: [...state.messages, message],
+    })),
+  appendMessagePart: (content) =>
+    set((state) => {
+      const lastMessage = state.messages[state.messages.length - 1];
+      if (!lastMessage || lastMessage.role !== "ai") return state;
+
+      return {
+        messages: state.messages.map((msg, i) =>
+          i === state.messages.length - 1
+            ? { ...msg, content: msg.content + content }
+            : msg
+        ),
+      };
+    }),
   setChatData: (data) => set({ chatData: data }),
   setChatLoading: (loading) => set({ isChatLoading: loading }),
   updateMessagesFromHistory: (history) => set({ messages: history }),

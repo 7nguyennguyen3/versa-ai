@@ -42,40 +42,6 @@ const MicrosoftSignInButton = () => {
   );
 };
 
-const GitHubSignInButton = () => {
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const { checkStatus } = useAuthStore();
-
-  const handleGitHubSignIn = async () => {
-    setLoading(true);
-
-    try {
-      const response = await axios.get("/api/auth/github"); // Adjust if using OAuth redirect
-
-      if (response.status === 200) {
-        await checkStatus();
-        router.push("/");
-      }
-    } catch (err) {
-      console.error("GitHub Sign-In failed:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <Button
-      onClick={handleGitHubSignIn}
-      className="w-full flex items-center justify-center space-x-2 bg-black text-white border border-black hover:bg-gray-800"
-      disabled={true}
-    >
-      <span>{loading ? "Signing in..." : "Continue with GitHub"}</span>
-      <FaGithub className="w-5 h-5" />
-    </Button>
-  );
-};
-
 const GoogleSignInButton = () => {
   const [loading, setLoading] = useState(false);
   const handleGoogleSignIn = () => {
@@ -105,6 +71,33 @@ const SignUpButton = ({ signup }: { signup: boolean }) => {
         <span>{signup ? "Create an Account" : "Sign in with Email"}</span>
       </Button>
     </Link>
+  );
+};
+
+const GitHubSignInButton = () => {
+  const [loading, setLoading] = useState(false);
+
+  const handleGitHubSignIn = async () => {
+    setLoading(true);
+
+    try {
+      window.location.href = "/api/auth/github";
+    } catch (err) {
+      console.error("GitHub Sign-In failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Button
+      onClick={handleGitHubSignIn}
+      className="w-full flex items-center justify-center space-x-2 bg-black text-white border border-black hover:bg-gray-800"
+      disabled={loading}
+    >
+      <FaGithub className="w-5 h-5" />
+      <span>{loading ? "Signing in..." : "Continue with GitHub"}</span>
+    </Button>
   );
 };
 

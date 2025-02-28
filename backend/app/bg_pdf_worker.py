@@ -21,7 +21,7 @@ def get_chunk_params(text_length):
     else:  # Large PDFs
         chunk_size, chunk_overlap = 256, 64  # ~175 words (~400 characters)
 
-    logging.debug(f"📏 Using chunk_size={chunk_size}, chunk_overlap={chunk_overlap} for text length {text_length} words")
+    logging.info(f"📏 Using chunk_size={chunk_size}, chunk_overlap={chunk_overlap} for text length {text_length} words")
     return chunk_size, chunk_overlap
 
 async def process_pdf_worker(redis_instance):
@@ -33,7 +33,7 @@ async def process_pdf_worker(redis_instance):
             _, task_data = await redis_instance.brpop("pdf_ingestion_queue")  # Blocking pop
             task = json.loads(task_data)
             await process_pdf_ingestion(task["pdfId"], task["userId"])
-            logging.debug(f"✅ PDF ingestion task completed for PDF ID: {task['pdfId']} and User ID: {task['userId']}")
+            logging.info(f"✅ PDF ingestion task completed for PDF ID: {task['pdfId']} and User ID: {task['userId']}")
 
         except Exception as e:
             logging.error(f"❌ Error in PDF ingestion worker: {e}")
@@ -67,10 +67,10 @@ async def process_pdf_ingestion(pdf_id: str, user_id: str):
         text_splitter = TokenTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
 
         text_chunks = text_splitter.split_text(text)
-        logging.debug(f"📄 PDF {pdf_id} split into {len(text_chunks)} chunks")
+        logging.info(f"📄 PDF {pdf_id} split into {len(text_chunks)} chunks")
 
         avg_tokens_per_chunk = sum(len(chunk.split()) for chunk in text_chunks) / len(text_chunks)
-        logging.debug(f"📊 Average tokens per chunk: {avg_tokens_per_chunk}")
+        logging.info(f"📊 Average tokens per chunk: {avg_tokens_per_chunk}")
 
         documents = text_splitter.create_documents(
             [text], metadatas=[{"userId": user_id, "pdfId": pdf_id}] * len(text_chunks)
@@ -79,7 +79,7 @@ async def process_pdf_ingestion(pdf_id: str, user_id: str):
         # Store in Pinecone
         PineconeVectorStore.from_documents(documents, embeddings, index_name="development")
 
-        logging.debug(f"✅ PDF {pdf_id} processed and stored in Pinecone index: development")
+        logging.info(f"✅ PDF {pdf_id} processed and stored in Pinecone index: development")
 
     except Exception as e:
         logging.error(f"❌ Error processing PDF {pdf_id}: {e}")

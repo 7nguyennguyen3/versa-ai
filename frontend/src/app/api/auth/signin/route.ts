@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       { id: userData.id, email, name: userData.name },
       JWT_SECRET,
       {
-        expiresIn: "60m",
+        expiresIn: "7d",
       }
     );
 
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       secure: true,
       sameSite: "none",
       path: "/",
-      maxAge: 60 * 60 * 24, // 1 day
+      maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
     return response;

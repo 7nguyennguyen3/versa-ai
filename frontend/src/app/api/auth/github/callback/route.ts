@@ -6,9 +6,9 @@ import { db } from "@/lib/firebaseAdmin"; // Import Firestore DB
 const JWT_SECRET = process.env.JWT_SECRET!; // Ensure you have this in your .env file
 
 export async function GET(request: NextRequest) {
-  const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
-  const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
-  const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
+  const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID!;
+  const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET!;
+  const GITHUB_REDIRECT_URI = process.env.GITHUB_REDIRECT_URI;
 
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
@@ -23,42 +23,55 @@ export async function GET(request: NextRequest) {
   try {
     // Exchange the authorization code for an access token
     const tokenResponse = await axios.post(
-      "https://oauth2.googleapis.com/token",
+      "https://github.com/login/oauth/access_token",
       null,
       {
         params: {
-          client_id: GOOGLE_CLIENT_ID,
-          client_secret: GOOGLE_CLIENT_SECRET,
-          redirect_uri: GOOGLE_REDIRECT_URI,
-          grant_type: "authorization_code",
+          client_id: GITHUB_CLIENT_ID,
+          client_secret: GITHUB_CLIENT_SECRET,
           code,
+          redirect_uri: GITHUB_REDIRECT_URI,
         },
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: { Accept: "application/json" },
       }
     );
 
-    const { access_token, id_token } = tokenResponse.data;
+    const { access_token } = tokenResponse.data;
 
-    // Fetch user info from Google
-    const userResponse = await axios.get(
-      "https://www.googleapis.com/oauth2/v2/userinfo",
+    if (!access_token) {
+      throw new Error("Failed to retrieve access token");
+    }
+
+    // Fetch user info from GitHub
+    const userResponse = await axios.get("https://api.github.com/user", {
+      headers: { Authorization: `Bearer ${access_token}` },
+    });
+
+    const user = userResponse.data; // { id, name, email, avatar_url, etc. }
+
+    // Fetch user emails (GitHub requires a separate request for email)
+    const emailResponse = await axios.get(
+      "https://api.github.com/user/emails",
       {
         headers: { Authorization: `Bearer ${access_token}` },
       }
     );
 
-    const user = userResponse.data; // { id, name, email, picture }
+    const primaryEmail = emailResponse.data.find(
+      (email: any) => email.primary
+    )?.email;
 
     // Check if user exists in Firestore
-    const userRef = db.collection("users").doc(user.id);
+    const userRef = db.collection("users").doc(user.id.toString());
     const doc = await userRef.get();
 
     if (!doc.exists) {
       // Save new user
       await userRef.set({
         id: user.id,
-        name: user.name,
-        email: user.email,
+        name: user.name || user.login, // Fallback to GitHub username if name is not provided
+        email: primaryEmail,
+        avatar: user.avatar_url,
         role: "user",
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -71,8 +84,8 @@ export async function GET(request: NextRequest) {
     // Generate JWT Token
     const tokenPayload = {
       id: user.id,
-      name: user.name,
-      email: user.email,
+      name: user.name || user.login,
+      email: primaryEmail,
       role: "user",
     };
 
@@ -94,9 +107,9 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("Google OAuth Error:", error);
+    console.error("GitHub OAuth Error:", error);
     return NextResponse.json(
-      { error: "Failed to authenticate" },
+      { error: "Failed to authenticate with GitHub" },
       { status: 500 }
     );
   }

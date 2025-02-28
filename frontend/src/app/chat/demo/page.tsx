@@ -34,7 +34,6 @@ import remarkGfm from "remark-gfm";
 import { v4 as uuidv4 } from "uuid";
 
 const Demopage = () => {
-  const [viewMode, setViewMode] = useState<"chat" | "pdf">("chat");
   const {
     messages,
     chatData,
@@ -53,11 +52,13 @@ const Demopage = () => {
     updateMessagesFromHistory,
   } = useAppStore();
 
+  const [viewMode, setViewMode] = useState<"chat" | "pdf">("chat");
   const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const botResponseRef = useRef("");
+  const lastUpdateRef = useRef(Date.now());
 
   const DEFAULT_PDF = publicPdfs.find((pdf) => pdf.pdfName === "Bitcoin")!;
 
@@ -125,6 +126,7 @@ const Demopage = () => {
     setChatData("");
     setChatLoading(true);
     botResponseRef.current = "";
+    lastUpdateRef.current = Date.now();
 
     try {
       await axios.post("/api/chat/demo", {
@@ -139,7 +141,14 @@ const Demopage = () => {
 
       eventSourceRef.current.onmessage = (event) => {
         botResponseRef.current += event.data.replace(/<br>/g, "\n");
-        setChatData(botResponseRef.current);
+
+        // Throttle updates to avoid excessive re-renders
+        const now = Date.now();
+        if (now - lastUpdateRef.current >= 100) {
+          // Update every 100ms
+          setChatData(botResponseRef.current);
+          lastUpdateRef.current = now;
+        }
       };
 
       eventSourceRef.current.addEventListener("end", () => {

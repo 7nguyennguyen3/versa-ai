@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { sendMessage } from "../_hooks/useChatSend";
@@ -15,12 +15,20 @@ interface ChatComponentProps {
 const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
   const { messages, isChatLoading, fetchChatOptions, fetchPdfOptions } =
     useAppStore();
-
   const [message, setMessage] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [streamingResponse, setStreamingResponse] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Memoized stream handlers
+  const handleStreamUpdate = useCallback((data: string) => {
+    setStreamingResponse(data);
+  }, []);
+
+  const handleStreamComplete = useCallback(() => {
+    setStreamingResponse("");
+  }, []);
 
   useEffect(() => {
     if (userId) {
@@ -34,14 +42,11 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
       try {
         const response = await fetch("/api/auth/get-token");
         const data = await response.json();
-        if (data.token) {
-          setToken(data.token);
-        }
+        if (data.token) setToken(data.token);
       } catch (error) {
         console.error("Failed to fetch token:", error);
       }
     };
-
     fetchToken();
   }, []);
 
@@ -53,12 +58,9 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
         message,
         userId,
         token,
-        onStreamUpdate: setStreamingResponse,
-        onStreamComplete: (finalResponse) => {
-          setStreamingResponse(""); // Clear streaming data
-        },
+        onStreamUpdate: handleStreamUpdate,
+        onStreamComplete: handleStreamComplete,
       });
-
       setMessage("");
     } catch (error) {
       console.error("Failed to send message:", error);

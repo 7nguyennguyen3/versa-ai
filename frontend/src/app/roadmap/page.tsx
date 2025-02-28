@@ -3,15 +3,6 @@ import { useState } from "react";
 import { APP_ROADMAP } from "../_global/variables";
 import { Button } from "@/components/ui/button";
 
-export interface RoadmapProps {
-  devName: string;
-  status: "In Progress" | "Completed" | "Not Started" | "Skipped" | "On Hold";
-  description: string;
-  startDate: Date;
-  endDate: Date;
-  comments?: string;
-}
-
 const STATUS_FILTERS = [
   "All",
   "In Progress",
@@ -20,6 +11,12 @@ const STATUS_FILTERS = [
   "Skipped",
   "On Hold",
 ];
+
+const PRIORITY_COLORS = {
+  Low: "bg-green-100 text-green-800",
+  Medium: "bg-yellow-100 text-yellow-800",
+  High: "bg-red-100 text-red-800",
+};
 
 const RoadmapPage = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
@@ -96,6 +93,13 @@ const RoadmapPage = () => {
                       }`}
                     >
                       {item.status}
+                    </span>
+                    <span
+                      className={`px-2 py-1 rounded text-sm font-medium ${
+                        PRIORITY_COLORS[item.priority]
+                      }`}
+                    >
+                      {item.priority} Priority
                     </span>
                     <span className="text-sm text-gray-500">
                       {item.startDate.toLocaleDateString()} -{" "}

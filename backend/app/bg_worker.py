@@ -92,7 +92,7 @@ async def background_flush_task(redis_instance, firestore_db):
                             pipe.set(last_flush_key, current_time)
                             await pipe.execute()
 
-                        logging.debug(f"✅ Flushed session {chat_session_id} to Firestore with latest_pdfId {latest_pdf_id}.")
+                        logging.info(f"✅ Flushed session {chat_session_id} to Firestore with latest_pdfId {latest_pdf_id}.")
 
                     except json.JSONDecodeError:
                         logging.error(f"❌ Failed to decode session {chat_session_id}, skipping.")
@@ -100,7 +100,7 @@ async def background_flush_task(redis_instance, firestore_db):
             # Commit batch write to Firestore
             batch.commit()
 
-            logging.debug(f"✅ Completed session flush check. Current active sessions: {len(active_sessions)}")
+            logging.info(f"✅ Completed session flush check. Current active sessions: {len(active_sessions)}")
 
         except Exception as e:
             logging.error(f"❌ Error in background_flush_task: {e}")

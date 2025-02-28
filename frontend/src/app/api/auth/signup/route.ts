@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     // Generate JWT Token
     const token = jwt.sign(userData, JWT_SECRET, {
-      expiresIn: "30m",
+      expiresIn: "7d",
     });
 
     // Set cookie with JWT
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       secure: true,
       sameSite: "none",
       path: "/",
-      maxAge: 60 * 60 * 24, // 1 day
+      maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
     return response;

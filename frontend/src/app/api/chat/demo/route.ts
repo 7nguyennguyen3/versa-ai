@@ -4,9 +4,6 @@ import axios from "axios";
 const DEMO_SECRET = process.env.DEMO_SECRET;
 const API_URL = process.env.NEXT_PUBLIC_CHAT_ENDPOINT;
 
-console.log("DEMO_SECRET:", DEMO_SECRET);
-console.log("API_URL:", API_URL);
-
 export async function POST(request: NextRequest) {
   try {
     const { pdfId, message, chat_session_id } = await request.json();

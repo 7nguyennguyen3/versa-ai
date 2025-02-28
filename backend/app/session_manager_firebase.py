@@ -39,7 +39,7 @@ class SessionManager:
             # Ensure pdfId is always stored
             session_data["pdfId"] = pdf_id  
 
-            logging.debug(f"Storing session: {chat_session_id}, user: {user_id}, pdf: {pdf_id}")
+            logging.info(f"Storing session: {chat_session_id}, user: {user_id}, pdf: {pdf_id}")
 
             new_message = {
                 "role": role,
@@ -58,7 +58,7 @@ class SessionManager:
                 pipe.sadd("active_sessions", chat_session_id)
                 await pipe.execute()
 
-            logging.debug(f"✅ Message added to Redis session: {chat_session_id}")
+            logging.info(f"✅ Message added to Redis session: {chat_session_id}")
 
 
     async def get_history(self, chat_session_id: str):
@@ -83,10 +83,10 @@ class SessionManager:
                 new_messages = [msg for msg in redis_history if msg["timestamp"] > last_firestore_timestamp]
 
                 if new_messages:
-                    logging.debug(f"Merging new messages for session: {chat_session_id}")
+                    logging.info(f"Merging new messages for session: {chat_session_id}")
                     return firestore_history + new_messages
 
-            logging.debug(f"Returning Firestore history for session: {chat_session_id}")
+            logging.info(f"Returning Firestore history for session: {chat_session_id}")
             return firestore_history
 
     async def clear_session(self, chat_session_id: str):
@@ -96,4 +96,4 @@ class SessionManager:
             await self.redis.delete(session_key)
 
             self.db.collection("sessions").document(chat_session_id).delete()
-            logging.debug(f"Cleared session: {chat_session_id}")
+            logging.info(f"Cleared session: {chat_session_id}")
