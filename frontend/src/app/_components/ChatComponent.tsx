@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { PlusCircleIcon, Send, Settings } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -13,13 +13,29 @@ interface ChatComponentProps {
 }
 
 const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
-  const { messages, isChatLoading, fetchChatOptions, fetchPdfOptions } =
-    useAppStore();
+  const {
+    messages,
+    isChatLoading,
+    fetchChatOptions,
+    fetchPdfOptions,
+    currentChatId,
+    currentPdfId,
+  } = useAppStore();
   const [message, setMessage] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [streamingResponse, setStreamingResponse] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Add this effect to clear error when selections change
+  useEffect(() => {
+    if (currentChatId || currentPdfId) {
+      setError(null);
+    }
+  }, [currentChatId, currentPdfId]); // Run when either selection changes
+
+  console.log(error);
 
   // Memoized stream handlers
   const handleStreamUpdate = useCallback((data: string) => {
@@ -52,6 +68,15 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
 
   const handleSendMessage = async () => {
     if (!message.trim() || !token) return;
+
+    if (!currentChatId && !currentPdfId) {
+      setError(
+        "Please select a chat session or a PDF before sending a message."
+      );
+      return;
+    }
+
+    setError(null); // Clear any previous error
 
     try {
       await sendMessage({
@@ -87,8 +112,18 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
 
   return (
     <div className="bg-white w-full flex justify-center h-screen">
-      <div className="max-w-[800px] w-full h-screen flex flex-col p-3">
+      <div className="max-w-[600px] w-full h-screen flex flex-col p-3">
         <div className="flex flex-col bg-white w-full h-full">
+          <div className="flex flex-col items-center text-center space-y-2 p-4 bg-gray-100 rounded-lg shadow-md mb-5">
+            <p className="text-sm text-gray-700">
+              <strong>Note:</strong> Utilze the{" "}
+              <span className="inline-flex items-center gap-1 text-blue-500 font-medium align-middle whitespace-nowrap">
+                gear icon <Settings /> and plus icon <PlusCircleIcon />
+              </span>{" "}
+              inside the input bar to change settings like document or start a
+              new chat.
+            </p>
+          </div>
           {/* Chat Messages */}
           <div className="px-6 gap-5 custom-scrollbar flex flex-col flex-grow overflow-y-auto h-0 mt-2">
             {messages.map((msg, index) => (
@@ -125,6 +160,11 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
 
           {/* Chat Input */}
           <div className="p-[2px] bg-white flex flex-col items-center w-full border rounded-lg">
+            {error && (
+              <div className="text-red-500 text-sm mb-2 px-2 py-1 bg-red-50 border border-red-200 rounded w-full">
+                ⚠️ {error}
+              </div>
+            )}
             <textarea
               ref={textareaRef}
               className="text-xs p-2 w-full focus:border-none focus:outline-none custom-scrollbar"

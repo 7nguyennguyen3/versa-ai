@@ -21,6 +21,7 @@ interface AppStoreState {
   chatOptions: ChatSession[];
   isLoadingOptions: boolean;
   error: string | null;
+  cacheBuster: number | null; // Add cacheBuster to the state
 
   // Actions
   // Chat Actions
@@ -37,7 +38,10 @@ interface AppStoreState {
   setRetrievalMethod: (method: string) => void;
 
   // Data Fetching Actions
-  fetchPdfOptions: (userId: string) => Promise<void>;
+  fetchPdfOptions: (
+    userId: string,
+    cacheBuster?: number | null
+  ) => Promise<void>; // Add cacheBuster parameter
   fetchChatOptions: (userId: string) => Promise<void>;
   addNewChatSession: (userId: string, sessionId: string) => void;
 }
@@ -57,6 +61,7 @@ export const useAppStore = create<AppStoreState>((set) => ({
   chatOptions: [],
   isLoadingOptions: false,
   error: null,
+  cacheBuster: null, // Initialize cacheBuster
 
   // Actions
   addMessage: (message) =>
@@ -96,11 +101,18 @@ export const useAppStore = create<AppStoreState>((set) => ({
   setModel: (model) => set({ selectedModel: model }),
   setRetrievalMethod: (method) => set({ selectedRetrievalMethod: method }),
 
-  fetchPdfOptions: async (userId) => {
+  fetchPdfOptions: async (userId, cacheBuster = null) => {
     set({ isLoadingOptions: true, error: null });
     try {
-      const response = await axios.post("/api/pdf/get-user-pdfs", { userId });
-      set({ pdfOptions: response.data, isLoadingOptions: false });
+      const response = await axios.post("/api/pdf/get-user-pdfs", {
+        userId,
+        cacheBuster,
+      });
+      set({
+        pdfOptions: response.data.pdfs,
+        cacheBuster: response.data.cacheBuster, // Update cacheBuster in the store
+        isLoadingOptions: false,
+      });
     } catch (err) {
       set({ error: "Failed to fetch PDFs", isLoadingOptions: false });
     }

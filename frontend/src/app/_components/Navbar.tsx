@@ -10,7 +10,7 @@ import { useAuthStore } from "../_store/useAuthStore";
 
 const Navbar = () => {
   const { authenticated, name, logout, userId } = useAuthStore();
-  const { fetchChatOptions, fetchPdfOptions } = useAppStore();
+  const { fetchChatOptions, fetchPdfOptions, cacheBuster } = useAppStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -21,9 +21,9 @@ const Navbar = () => {
   useEffect(() => {
     if (authenticated && userId) {
       fetchChatOptions(userId);
-      fetchPdfOptions(userId);
+      fetchPdfOptions(userId, cacheBuster);
     }
-  }, [userId]);
+  }, [userId, cacheBuster]);
 
   const authLinks = [
     { name: "Chat", href: "/chat" },

@@ -49,7 +49,10 @@ export async function POST(request: NextRequest) {
     const bucket = storage.bucket();
     const fileUpload = bucket.file(fileName);
     await fileUpload.save(Buffer.from(fileBuffer), {
-      metadata: { contentType: "application/pdf" },
+      metadata: {
+        contentType: "application/pdf",
+        cacheControl: "public, max-age=31536000", // Cache for 1 year
+      },
     });
 
     await fileUpload.makePublic();
@@ -67,6 +70,13 @@ export async function POST(request: NextRequest) {
     };
 
     await db.collection("pdfs").doc(pdfId).set(pdfDoc);
+
+    // Update the cacheBuster for the user
+    const cacheBuster = Date.now(); // Current timestamp
+    await db
+      .collection("users")
+      .doc(userId)
+      .set({ cacheBuster }, { merge: true });
 
     // Background task to send to Python backend
     const pythonApiUrl = `${process.env.NEXT_PUBLIC_CHAT_ENDPOINT}/upsert_pdf`;

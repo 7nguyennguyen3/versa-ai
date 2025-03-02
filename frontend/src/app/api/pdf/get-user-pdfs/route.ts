@@ -8,6 +8,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing userId" }, { status: 400 });
     }
 
+    // Fetch the cacheBuster for the user
+    const userDoc = await db.collection("users").doc(userId).get();
+    const cacheBuster = userDoc.exists ? userDoc.data()?.cacheBuster : null;
+
+    // Fetch PDFs for the user
     const snapshot = await db
       .collection("pdfs")
       .where("userId", "==", userId)
@@ -20,7 +25,10 @@ export async function POST(request: NextRequest) {
       pdfName: doc.data().pdfName,
     }));
 
-    return NextResponse.json(pdfs);
+    // Include cacheBuster in the response
+    const response = NextResponse.json({ pdfs, cacheBuster });
+    response.headers.set("Cache-Control", "public, s-maxage=360000"); // 100 hours
+    return response;
   } catch (error) {
     console.error("Error retrieving PDFs:", error);
     return NextResponse.json(
