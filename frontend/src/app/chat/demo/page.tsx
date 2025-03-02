@@ -401,7 +401,7 @@ const Demopage = () => {
       >
         {selectedPdf ? (
           <iframe
-            src={selectedPdf.pdfUrl}
+            src={selectedPdf?.pdfUrl || ""}
             className="w-full h-full border-2 border-gray-400 rounded-lg shadow-lg"
             style={{ height: "calc(100vh)" }}
           />

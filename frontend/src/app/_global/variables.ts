@@ -244,19 +244,19 @@ export const RETRIEVAL_OPTIONS = [
 export const publicPdfs: PDFDocument[] = [
   {
     pdfId: "cod-pdf",
-    pdfUrl: `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}/${process.env.NEXT_PUBLIC_PDFS_BASE_PATH}/Cod.pdf`,
+    pdfUrl: `${process.env.NEXT_PUBLIC_COD_PDF}`,
     pdfName: "Cod",
     uploadedAt: new Date(),
   },
   {
     pdfId: "bitcoin-pdf",
-    pdfUrl: `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}/${process.env.NEXT_PUBLIC_PDFS_BASE_PATH}/Bitcoin.pdf`,
+    pdfUrl: `${process.env.NEXT_PUBLIC_BITCOIN_PDF}`,
     pdfName: "Bitcoin",
     uploadedAt: new Date(),
   },
   {
     pdfId: "theory_of_relativity-pdf",
-    pdfUrl: `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}/${process.env.NEXT_PUBLIC_PDFS_BASE_PATH}/Theory_of_relativity.pdf`,
+    pdfUrl: `${process.env.NEXT_PUBLIC_TOR_PDF}`,
     pdfName: "Theory of Relativity",
     uploadedAt: new Date(),
   },

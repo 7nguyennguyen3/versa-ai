@@ -28,14 +28,11 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Add this effect to clear error when selections change
   useEffect(() => {
     if (currentChatId || currentPdfId) {
       setError(null);
     }
-  }, [currentChatId, currentPdfId]); // Run when either selection changes
-
-  console.log(error);
+  }, [currentChatId, currentPdfId]);
 
   // Memoized stream handlers
   const handleStreamUpdate = useCallback((data: string) => {
@@ -66,9 +63,12 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
     fetchToken();
   }, []);
 
+  console.log(error);
+
   const handleSendMessage = async () => {
     if (!message.trim() || !token) return;
 
+    // Only set error if no chat or PDF is selected
     if (!currentChatId && !currentPdfId) {
       setError(
         "Please select a chat session or a PDF before sending a message."
