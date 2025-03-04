@@ -44,159 +44,168 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="w-full bg-transparent backdrop-blur-md shadow-md z-999 sticky top-0">
-      <div className="container mx-auto flex justify-between items-center p-2">
-        <Link href="/" className="text-lg font-bold ">
-          <Bot />
+    <header className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 backdrop-blur-lg border-b border-gray-200 z-50 sticky top-0">
+      <div className="container mx-auto flex justify-between items-center px-4 sm:px-6 py-3">
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-colors"
+        >
+          <Bot className="w-8 h-8" />
+          <span className="text-xl font-semibold tracking-tight">AI Chat</span>
         </Link>
 
-        <nav className="hidden lg:flex items-center space-x-6 text-xs lg:text-[14px]">
-          {(authenticated ? authLinks : guestLinks).map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              className="hover:text-blue-500 transition"
-            >
-              {link.name}
-            </Link>
-          ))}
+        {/* Desktop Navigation */}
+        <nav className="hidden lg:flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            {(authenticated ? authLinks : guestLinks).map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className="relative text-sm font-medium text-gray-600 hover:text-indigo-700 transition-colors px-3 py-2 rounded-lg group"
+              >
+                {link.name}
+                {/* Animated underline */}
+                <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-indigo-700 transition-all duration-200 group-hover:w-full"></span>
+              </Link>
+            ))}
+          </div>
+
+          <div className="h-6 w-[2px] bg-gray-300" />
 
           {authenticated ? (
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center space-x-2 hover:text-blue-500 transition"
+                className="flex items-center gap-2 group pl-3 pr-2 py-1.5 rounded-full bg-white shadow-sm hover:shadow-md transition-all"
               >
-                <span>Hello, {name ?? "Jimmy"}</span>
-                <ChevronDown className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-medium">
+                  {name?.charAt(0) ?? "J"}
+                </div>
+                <ChevronDown className="w-4 h-4 text-gray-600 group-hover:text-indigo-600 transition-colors" />
               </button>
+
               <AnimatePresence>
                 {isDropdownOpen && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md p-2"
+                    className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-xl p-2 border border-gray-100"
                   >
+                    <div className="px-3 py-2 text-sm font-medium text-gray-500">
+                      {name ?? "Jimmy"}
+                    </div>
                     <Link
                       href="/settings"
-                      className="block px-4 py-2 hover:bg-gray-100 rounded-md"
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                     >
-                      Settings
+                      ⚙️ Settings
                     </Link>
                     <Button
-                      variant="destructive"
-                      className="w-full mt-2"
+                      variant="ghost"
+                      className="w-full justify-start text-red-600 hover:bg-red-50/50 mt-2"
                       onClick={logout}
                     >
-                      Logout
+                      🚪 Logout
                     </Button>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
           ) : (
-            <>
+            <div className="flex items-center gap-3">
               <Link href="/auth/signin">
-                <Button variant={"outline"}>Sign In</Button>
+                <Button
+                  variant="outline"
+                  className="text-gray-600 hover:bg-gray-100/70 px-4 py-2"
+                >
+                  Sign In
+                </Button>
               </Link>
               <Link href="/auth/signup">
-                <Button variant={"outline"}>Sign Up</Button>
+                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 shadow-sm hover:shadow-md transition-all">
+                  Get Started
+                </Button>
               </Link>
-            </>
+            </div>
           )}
         </nav>
 
+        {/* Mobile Menu Button */}
         <button
-          className="lg:hidden p-2 bg-gray-200 rounded-md"
+          className="lg:hidden p-2 text-gray-600 hover:bg-gray-100/70 rounded-lg transition-colors"
           onClick={() => setIsMenuOpen(true)}
         >
           <Menu className="w-6 h-6" />
         </button>
       </div>
 
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-white min-h-screen z-999 flex flex-col p-6"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            className="fixed inset-0 min-h-screen bg-white z-50 flex flex-col p-6"
           >
-            <div className="flex justify-between items-center">
-              <span className="text-2xl font-bold">Menu</span>
-              <button onClick={() => setIsMenuOpen(false)}>
-                <X className="w-8 h-8" />
+            <div className="flex justify-between items-center mb-8">
+              <div className="flex items-center gap-2">
+                <Bot className="w-8 h-8 text-indigo-600" />
+                <span className="text-xl font-semibold">AI Chat</span>
+              </div>
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="p-2 hover:bg-gray-100/70 rounded-full"
+              >
+                <X className="w-6 h-6" />
               </button>
             </div>
 
-            <nav className="mt-6 space-y-4">
+            <nav className="flex flex-col max-w-[200px] gap-3">
               {(authenticated ? authLinks : guestLinks).map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="text-lg hover:text-blue-500 block"
+                  className="block px-4 py-3 text-lg font-medium text-gray-700 hover:bg-gray-100/70 rounded-xl transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {link.name}
                 </Link>
               ))}
-              {authenticated ? (
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="max-w-[250px] flex items-center space-x-2 font-semibold"
-                  >
-                    <span>Hello, {name ?? "Jimmy"}</span>
-                    <ChevronDown className="w-4 h-4" />
-                  </button>
 
-                  <AnimatePresence>
-                    {isDropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="mt-2 max-w-[250px] bg-white shadow-lg rounded-md p-2"
-                      >
-                        <Link
-                          href="/settings"
-                          className="block px-4 py-2 hover:bg-gray-100 rounded-md"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          Settings
-                        </Link>
-                        <Link href={"/"}>
-                          <Button
-                            className="w-full mt-2 bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition"
-                            onClick={() => {
-                              setIsDropdownOpen(false);
-                              logout();
-                            }}
-                          >
-                            Logout
-                          </Button>
-                        </Link>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+              {authenticated ? (
+                <>
+                  <Link
+                    href="/settings"
+                    className="block px-4 py-3 text-lg font-medium text-gray-700 hover:bg-gray-100/70 rounded-xl transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Settings
+                  </Link>
+                  <Button
+                    className="w-full mt-4 bg-red-100 text-red-600 hover:bg-red-200 h-12 text-lg"
+                    onClick={logout}
+                  >
+                    Logout
+                  </Button>
+                </>
               ) : (
-                <div className="flex flex-col gap-4">
-                  <Link href="/auth/signin">
+                <div className="flex flex-col gap-6">
+                  <Link href="/auth/signin" className="block">
                     <Button
-                      className="max-w-[250px]"
+                      className="w-full h-12 text-lg bg-gray-100 hover:bg-gray-200 text-gray-700"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Sign In
                     </Button>
                   </Link>
-                  <Link href="/auth/signup">
+                  <Link href="/auth/signup" className="block">
                     <Button
-                      className="max-w-[250px]"
+                      className="w-full h-12 text-lg bg-indigo-600 hover:bg-indigo-700 text-white"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      Sign Up
+                      Get Started
                     </Button>
                   </Link>
                 </div>
