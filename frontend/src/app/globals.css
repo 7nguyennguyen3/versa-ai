@@ -19,6 +19,7 @@ body {
     --secondary: 24 30% 96%;
     --secondary-foreground: 24 89% 30%;
     --muted: 24 12% 90%;
+    --muted-2: 240 4.8% 95.9%;
     --muted-foreground: 24 7% 46%;
     --accent: 24 40% 94%;
     --accent-foreground: 24 89% 30%;
@@ -73,7 +74,7 @@ body {
 
 /* Custom scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 9px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {

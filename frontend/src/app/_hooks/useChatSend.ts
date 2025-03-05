@@ -1,7 +1,5 @@
-// sendMessage.ts
-import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
-import { flushSync } from "react-dom";
+import { v4 as uuidv4 } from "uuid";
 import { useAppStore } from "../_store/useAppStore";
 
 interface SendMessageProps {

@@ -149,6 +149,24 @@ export const APP_ROADMAP: RoadmapProps[] = [
     priority: "High",
   },
   {
+    devName: "UI Improvement",
+    status: "In Progress",
+    description: "Enhance the user interface for better usability.",
+    startDate: new Date("03/02/2025"),
+    endDate: new Date(),
+    comments: "",
+    priority: "Medium",
+  },
+  {
+    devName: "Object Generation Streaming",
+    status: "Not Started",
+    description: "Upgrade the current approach of streaming text only.",
+    startDate: new Date(),
+    endDate: new Date(),
+    comments: "",
+    priority: "Medium",
+  },
+  {
     devName: "Create test to simulate handling 100+ users",
     status: "Not Started",
     description: "Create a test to simulate handling 100+ users.",
@@ -167,14 +185,16 @@ export const APP_ROADMAP: RoadmapProps[] = [
     priority: "Medium",
   },
   {
-    devName: "UI Improvement",
+    devName: "Dashboard & Settings Page",
     status: "Not Started",
-    description: "Enhance the user interface for better usability.",
+    description:
+      "Update the dashboard and setting page to include functionality.",
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
     priority: "Medium",
   },
+
   {
     devName: "Advanced Rate Limiting",
     status: "Not Started",

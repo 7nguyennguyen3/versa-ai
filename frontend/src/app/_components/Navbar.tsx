@@ -51,7 +51,7 @@ const Navbar = () => {
           className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-colors"
         >
           <Bot className="w-8 h-8" />
-          <span className="text-xl font-semibold tracking-tight">AI Chat</span>
+          <span className="text-xl font-semibold tracking-tight">Versa AI</span>
         </Link>
 
         {/* Desktop Navigation */}

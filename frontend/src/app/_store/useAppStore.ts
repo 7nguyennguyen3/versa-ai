@@ -44,6 +44,7 @@ interface AppStoreState {
   ) => Promise<void>; // Add cacheBuster parameter
   fetchChatOptions: (userId: string) => Promise<void>;
   addNewChatSession: (userId: string, sessionId: string) => void;
+  resetDemoState: () => void;
 }
 
 export const useAppStore = create<AppStoreState>((set) => ({
@@ -137,5 +138,16 @@ export const useAppStore = create<AppStoreState>((set) => ({
       userId,
     };
     set((state) => ({ chatOptions: [newSession, ...state.chatOptions] }));
+  },
+
+  resetDemoState: () => {
+    set({
+      messages: [],
+      chatData: "",
+      selectedPdf: null,
+      currentPdfId: null,
+      currentChatId: null,
+      isChatLoading: false,
+    });
   },
 }));

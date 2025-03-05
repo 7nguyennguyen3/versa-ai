@@ -38,14 +38,17 @@ const PdfChatPage = () => {
       <div
         className={`bg-white p-2 rounded-lg shadow-md flex flex-col flex-grow pt-4 ${
           viewMode === "chat" ? "flex" : "hidden"
-        } lg:flex lg:w-[40%]`}
+        } lg:flex lg:w-[50%] 2xl:w-[40%]`}
       >
+        <h1 className="text-2xl font-semibold text-center bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+          Versa PDF Chat
+        </h1>
         <ChatComponent userId={userId} />
       </div>
 
       {/* PDF Viewer (Visible on all screens, but toggled on mobile) */}
       <div
-        className={`p-3 w-full lg:w-[60%] bg-white flex justify-center h-full ${
+        className={`p-3 w-full lg:w-[50%] 2xl:w-[60%] bg-white flex justify-center h-full ${
           viewMode === "pdf" ? "flex" : "hidden"
         } lg:flex`}
       >

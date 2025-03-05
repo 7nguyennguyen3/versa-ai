@@ -34,7 +34,7 @@ const RoadmapPage = () => {
         </h1>
 
         {/* Filter Buttons */}
-        <div className="flex justify-center space-x-3 mb-6">
+        <div className="flex flex-wrap justify-center gap-3 mb-6">
           {STATUS_FILTERS.map((status) => (
             <Button
               key={status}
@@ -51,7 +51,7 @@ const RoadmapPage = () => {
         </div>
 
         {/* Roadmap Items */}
-        <div className="flex flex-col border-l-2 border-gray-300 pl-6 space-y-8">
+        <div className="flex flex-col border-l-2 border-gray-300 space-y-8">
           {filteredRoadmap.length > 0 ? (
             filteredRoadmap.map((item, index) => (
               <div key={index} className="flex items-start">
