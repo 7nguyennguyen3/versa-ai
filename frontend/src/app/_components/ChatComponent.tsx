@@ -142,14 +142,13 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
                   <Avatar className="h-6 w-6">
                     {msg.role === "human" ? (
                       <>
-                        <AvatarImage src="/user-avatar.png" />
                         <AvatarFallback className="bg-blue-500">
                           U
                         </AvatarFallback>
                       </>
                     ) : (
                       <>
-                        <AvatarImage src="/ai-avatar.png" />
+                        <AvatarImage src="/ai-avatar.jpeg" />
                         <AvatarFallback className="bg-orange-500">
                           AI
                         </AvatarFallback>
@@ -193,7 +192,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
               <Card className="p-4 max-w-[80%] bg-muted">
                 <div className="flex items-center gap-2 mb-2">
                   <Avatar className="h-6 w-6">
-                    <AvatarImage src="/ai-avatar.png" />
+                    <AvatarImage src="/ai-avatar.jpeg" />
                     <AvatarFallback>AI</AvatarFallback>
                   </Avatar>
                   <span className="text-sm font-medium">Assistant</span>

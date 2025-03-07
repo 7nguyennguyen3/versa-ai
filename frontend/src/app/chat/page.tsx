@@ -24,6 +24,7 @@ const ChatPage = () => {
       const timeout = setTimeout(() => {
         const generatedChatSessionId = uuidv4();
         const newSession: ChatSession = {
+          title: "New Chat",
           chat_session_id: generatedChatSessionId,
           chat_history: [],
           last_activity: new Date(),

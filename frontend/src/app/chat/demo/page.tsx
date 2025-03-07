@@ -96,6 +96,7 @@ const Demopage = () => {
     }
 
     setCurrentChat({
+      title: currentPdf.pdfName,
       chat_session_id: newSessionId,
       chat_history: [],
       last_activity: new Date(),
@@ -124,6 +125,7 @@ const Demopage = () => {
 
     if (!selectedChat) {
       setCurrentChat({
+        title: selectedPdf.pdfName,
         chat_session_id: sessionId,
         chat_history: [],
         last_activity: new Date(),
@@ -272,14 +274,13 @@ const Demopage = () => {
                       <Avatar className="h-6 w-6">
                         {msg.role === "human" ? (
                           <>
-                            <AvatarImage src="/user-avatar.png" />
                             <AvatarFallback className="bg-blue-500">
                               U
                             </AvatarFallback>
                           </>
                         ) : (
                           <>
-                            <AvatarImage src="/ai-avatar.png" />
+                            <AvatarImage src="/ai-avatar.jpeg" />
                             <AvatarFallback className="bg-orange-500">
                               AI
                             </AvatarFallback>
@@ -323,7 +324,7 @@ const Demopage = () => {
                   <Card className="p-4 max-w-[80%] bg-muted">
                     <div className="flex items-center gap-2 mb-2">
                       <Avatar className="h-6 w-6">
-                        <AvatarImage src="/ai-avatar.png" />
+                        <AvatarImage src="/ai-avatar.jpeg" />
                         <AvatarFallback>AI</AvatarFallback>
                       </Avatar>
                       <span className="text-sm font-medium">Assistant</span>
