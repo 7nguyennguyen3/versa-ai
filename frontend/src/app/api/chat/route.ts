@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
       chat_history: doc.data().chat_history || [],
       last_activity: doc.data().last_activity || null,
       latest_pdfId: doc.data().latest_pdfId || null,
+      title: doc.data().title || null,
     }));
 
     return NextResponse.json(chatSessions, { status: 200 });

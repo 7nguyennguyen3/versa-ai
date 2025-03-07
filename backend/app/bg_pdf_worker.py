@@ -42,7 +42,7 @@ async def process_pdf_ingestion(pdf_id: str, user_id: str):
     """Processes a single PDF ingestion task: downloads, extracts text, and upserts to Pinecone."""
     try:
         # Construct Firebase Storage path (last 6 characters of IDs)
-        from db import firebase_storage
+        from .db import firebase_storage
 
         pdf_path = f"pdfs/{user_id[-6:]}/{pdf_id[-6:]}.pdf"
         blob = firebase_storage.blob(pdf_path)

@@ -8,8 +8,10 @@ import os
 from .pinecone_retriever_chain import create_chain
 from firebase_admin import firestore  
 from .verify_access import get_current_user
+from .basic_chain import generate_chat_title
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from typing import Optional
 
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
@@ -21,6 +23,7 @@ class MessageRequest(BaseModel):
     chat_session_id: str
     pdf_id: str
     userId: str
+    isNewSession: Optional[bool] = False
 
 class PDFIngestRequest(BaseModel):
     pdfId: str
@@ -65,14 +68,26 @@ async def chat_send(request: Request, message_request: MessageRequest, user_id: 
     pdf_id = message_request.pdf_id
     chat_session_id = message_request.chat_session_id
     user_id = message_request.userId
+    isNewSession = message_request.isNewSession
 
-    logging.info(f"🚀 Received message for chat session {chat_session_id} from user {user_id}")
+    logging.info(f"🚀 Received message for chat session {chat_session_id} from user {user_id}. Is new session? {isNewSession}")
+
 
     user_exists = await verify_user(user_id)
     if not user_exists:
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
             content={"error": "User not found"}
+        )
+    
+    if isNewSession:
+        new_title = await generate_chat_title(user_message)
+        session_manager = request.app.state.session_manager_firebase
+        await session_manager.create_session(chat_session_id, user_id, pdf_id, initial_title="New Chat")
+        asyncio.create_task(
+            session_manager.update_session_title(
+                chat_session_id, new_title
+            )
         )
 
     message_data = json.dumps({
@@ -96,6 +111,13 @@ async def chat_send(request: Request, message_request: MessageRequest, user_id: 
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"error": "Internal Server Error"}
+        )
+    
+    if isNewSession:
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={"status": "Message received and session created",
+                     "new_title": new_title}
         )
 
     return JSONResponse(

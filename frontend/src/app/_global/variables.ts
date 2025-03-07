@@ -66,7 +66,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     priority: "Medium",
   },
   {
-    devName: "Front-end field validation --> pdfId, chat_session_id,",
+    devName: "Sending message validation",
     status: "Completed",
     description: "Implement front-end validation for various fields.",
     startDate: new Date("03/01/2025"),
@@ -86,11 +86,12 @@ export const APP_ROADMAP: RoadmapProps[] = [
   },
   {
     devName: "Reduce Bandwidth Usage, Cache PDFs/ Other Strategies",
-    status: "Not Started",
+    status: "Completed",
     description: "Reduce bandwidth usage by caching PDFs.",
-    startDate: new Date(),
-    endDate: new Date(),
-    comments: "",
+    startDate: new Date("03/4/2025"),
+    endDate: new Date("03/04/2025"),
+    comments:
+      "Used Vercel Blob Storage Built-in CDN & Firebase Storage Caching Strategy",
     priority: "High",
   },
   {
@@ -100,7 +101,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
-    priority: "Low",
+    priority: "High",
   },
   {
     devName: "Optimize Uploaded PDF",
@@ -123,11 +124,11 @@ export const APP_ROADMAP: RoadmapProps[] = [
   },
   {
     devName: "Enhanced Data Parsing/Display for Chat",
-    status: "Not Started",
+    status: "On Hold",
     description: "Improve data parsing and display in the chat interface.",
     startDate: new Date(),
     endDate: new Date(),
-    comments: "",
+    comments: "Currently using React Markdown",
     priority: "Medium",
   },
   {
@@ -159,11 +160,11 @@ export const APP_ROADMAP: RoadmapProps[] = [
   },
   {
     devName: "Object Generation Streaming",
-    status: "Not Started",
+    status: "Skipped",
     description: "Upgrade the current approach of streaming text only.",
     startDate: new Date(),
     endDate: new Date(),
-    comments: "",
+    comments: "Not Necessary --> Used React Markdown for now",
     priority: "Medium",
   },
   {
@@ -202,15 +203,15 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
-    priority: "High",
+    priority: "Low",
   },
   {
     devName: "Reverse Proxy",
-    status: "Not Started",
+    status: "Skipped",
     description: "Set up a reverse proxy for the application.",
     startDate: new Date(),
     endDate: new Date(),
-    comments: "",
+    comments: "Not Needed",
     priority: "Medium",
   },
 ];
@@ -267,22 +268,20 @@ export const publicPdfs: PDFDocument[] = [
     pdfUrl: `${process.env.NEXT_PUBLIC_COD_PDF}`,
     pdfName: "Cod",
     uploadedAt: new Date(),
+    pdfIngestionStatus: "success",
   },
   {
     pdfId: "bitcoin-pdf",
     pdfUrl: `${process.env.NEXT_PUBLIC_BITCOIN_PDF}`,
     pdfName: "Bitcoin",
     uploadedAt: new Date(),
+    pdfIngestionStatus: "success",
   },
   {
     pdfId: "theory_of_relativity-pdf",
     pdfUrl: `${process.env.NEXT_PUBLIC_TOR_PDF}`,
     pdfName: "Theory of Relativity",
     uploadedAt: new Date(),
+    pdfIngestionStatus: "success",
   },
-];
-
-export const chatOptions = [
-  { chat_session_id: "chat1", last_activity: new Date(), chat_history: [] },
-  { chat_session_id: "chat2", last_activity: new Date(), chat_history: [] },
 ];

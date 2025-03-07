@@ -1,6 +1,7 @@
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { useAppStore } from "../_store/useAppStore";
+import { ChatSession } from "../_global/interface";
 
 interface SendMessageProps {
   message: string;
@@ -27,6 +28,8 @@ export const sendMessage = async ({
     setChatLoading,
     setCurrentChat,
     addNewChatSession,
+    messages,
+    updateChatTitle,
   } = useAppStore.getState();
 
   // Add user message to the chat
@@ -35,12 +38,15 @@ export const sendMessage = async ({
 
   const sessionId: string = currentChatId ?? uuidv4();
 
+  const isNewSession = !currentChatId || messages.length === 0;
+
   if (!currentChatId) {
-    const newSession = {
+    const newSession: ChatSession = {
       chat_session_id: sessionId,
       chat_history: [...useAppStore.getState().messages],
       last_activity: new Date(),
       latest_pdfId: currentPdfId || selectedPdf?.pdfId || "",
+      title: "New Chat",
       userId: userId!,
     };
 
@@ -49,16 +55,21 @@ export const sendMessage = async ({
   }
 
   try {
-    await axios.post(
+    const res = await axios.post(
       `${process.env.NEXT_PUBLIC_CHAT_ENDPOINT}/chat_send`,
       {
         message,
         chat_session_id: sessionId,
         pdf_id: currentPdfId || selectedPdf?.pdfId,
         userId,
+        isNewSession,
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );
+
+    if (res.data.new_title) {
+      updateChatTitle(sessionId, res.data.new_title);
+    }
 
     const eventSource = new EventSource(
       `${process.env.NEXT_PUBLIC_CHAT_ENDPOINT}/chat_stream/${sessionId}`

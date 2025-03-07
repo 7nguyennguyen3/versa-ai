@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
       .get();
 
     const pdfs = snapshot.docs.map((doc) => ({
+      pdfIngestionStatus: doc.data().ingestionStatus,
       pdfId: doc.data().pdfId,
       pdfUrl: doc.data().pdfUrl,
       uploadedAt: doc.data().uploadedAt,

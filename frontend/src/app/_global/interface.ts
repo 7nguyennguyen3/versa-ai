@@ -22,6 +22,7 @@ export interface PDFUploadRequirements {
 }
 
 export interface PDFDocument {
+  pdfIngestionStatus: "pending" | "success" | "failed";
   pdfId: string;
   pdfUrl: string;
   uploadedAt: Date;
@@ -40,5 +41,6 @@ export interface ChatSession {
   chat_history: ChatMessage[];
   last_activity: Date | null;
   latest_pdfId: string;
+  title: string;
   userId?: string;
 }

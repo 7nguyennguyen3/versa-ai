@@ -30,6 +30,7 @@ interface AppStoreState {
   setChatData: (data: string) => void;
   setChatLoading: (loading: boolean) => void;
   updateMessagesFromHistory: (history: ChatMessage[]) => void;
+  updateChatTitle: (sessionId: string, newTitle: string) => void;
 
   // Selection Actions
   setCurrentPdf: (pdf: PDFDocument | null) => void;
@@ -85,6 +86,12 @@ export const useAppStore = create<AppStoreState>((set) => ({
   setChatData: (data) => set({ chatData: data }),
   setChatLoading: (loading) => set({ isChatLoading: loading }),
   updateMessagesFromHistory: (history) => set({ messages: history }),
+  updateChatTitle: (sessionId, newTitle) =>
+    set((state) => ({
+      chatOptions: state.chatOptions.map((chat) =>
+        chat.chat_session_id === sessionId ? { ...chat, title: newTitle } : chat
+      ),
+    })),
 
   setCurrentPdf: (pdf) =>
     set({
@@ -135,6 +142,7 @@ export const useAppStore = create<AppStoreState>((set) => ({
       chat_history: [],
       last_activity: new Date(),
       latest_pdfId: "",
+      title: "New Chat",
       userId,
     };
     set((state) => ({ chatOptions: [newSession, ...state.chatOptions] }));

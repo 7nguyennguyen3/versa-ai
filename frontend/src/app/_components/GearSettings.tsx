@@ -12,10 +12,10 @@ import {
 } from "@/components/ui/select";
 import { Lock, PlusCircleIcon, Settings } from "lucide-react";
 import React from "react";
+import { v4 as uuivd4 } from "uuid";
+import { ChatSession } from "../_global/interface";
 import { MODEL_OPTIONS, RETRIEVAL_OPTIONS } from "../_global/variables";
 import { useAppStore } from "../_store/useAppStore";
-import { ChatSession } from "../_global/interface";
-import { v4 as uuivd4 } from "uuid";
 
 interface GearSettingsProps {
   userId: string | null;
@@ -63,6 +63,7 @@ const GearSettings: React.FC<GearSettingsProps> = ({ userId }) => {
 
     // Create new chat session object
     const newChat: ChatSession = {
+      title: "New Chat",
       chat_session_id: sessionId,
       chat_history: [],
       last_activity: new Date(),
@@ -103,8 +104,21 @@ const GearSettings: React.FC<GearSettingsProps> = ({ userId }) => {
                 <div className="text-sm text-gray-500">No PDFs found</div>
               ) : (
                 pdfOptions.map((pdf) => (
-                  <SelectItem key={pdf.pdfId} value={pdf.pdfUrl}>
-                    {pdf.pdfName}
+                  <SelectItem
+                    key={pdf.pdfId}
+                    value={pdf.pdfUrl}
+                    disabled={
+                      pdf.pdfIngestionStatus === "pending" ||
+                      pdf.pdfIngestionStatus === "failed"
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      {(pdf.pdfIngestionStatus === "pending" ||
+                        pdf.pdfIngestionStatus === "failed") && (
+                        <Lock className="w-4 h-4 text-gray-500" />
+                      )}
+                      {pdf.pdfName}
+                    </div>
                   </SelectItem>
                 ))
               )}
@@ -134,7 +148,7 @@ const GearSettings: React.FC<GearSettingsProps> = ({ userId }) => {
                     key={chat.chat_session_id}
                     value={chat.chat_session_id}
                   >
-                    {chat.chat_session_id}
+                    {chat.title ?? chat.chat_session_id}
                   </SelectItem>
                 ))
               )}

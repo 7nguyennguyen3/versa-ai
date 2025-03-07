@@ -4,7 +4,7 @@ import json
 import asyncio
 import logging
 import time
-from google.cloud import firestore  # Firebase Firestore
+from google.cloud import firestore
 
 class SessionManager:
     def __init__(self, db=None, redis_instance=None):
@@ -97,3 +97,56 @@ class SessionManager:
 
             self.db.collection("sessions").document(chat_session_id).delete()
             logging.info(f"Cleared session: {chat_session_id}")
+
+    async def create_session(self, chat_session_id: str, user_id: str, pdf_id: str, initial_title: str):
+        """Create a new session with initial title"""
+        session_ref = self.db.collection("sessions").document(chat_session_id)
+        session_ref.set({
+            "userId": user_id,
+            "latest_pdfId": pdf_id,
+            "title": initial_title,
+            "created_at": firestore.SERVER_TIMESTAMP,
+            "updated_at": firestore.SERVER_TIMESTAMP,
+            "chat_history": []
+        })
+
+    async def update_session_title(self, chat_session_id: str, new_title: str):
+        """Update session title in Firestore with guaranteed valid title"""
+        try:
+            session_ref = self.db.collection("sessions").document(chat_session_id)
+            session_ref.update({
+                "title": new_title,
+                "updated_at": firestore.SERVER_TIMESTAMP  
+            })
+            logging.info(f"Updated title for session {chat_session_id} to: {new_title}")
+        except Exception as e:
+            logging.error(f"Failed to update title for session {chat_session_id}: {e}")
+            raise 
+
+
+    # async def update_session_title(self, chat_session_id: str, message):
+    #     MAX_RETRIES = 3
+    #     fallback_title = "Untitled Session"
+    #     """Update session title in Firestore"""
+    #     for attempt in range(MAX_RETRIES):
+    #         try:
+    #             new_title = await generate_chat_title(message)
+    #             session_ref = self.db.collection("sessions").document(chat_session_id)
+    #             session_ref.update({
+    #                 "title": new_title,
+    #                 "updated_at": firestore.SERVER_TIMESTAMP
+    #             })
+    #             logging.info(f"Successfully updated title for session {chat_session_id} to {new_title}")
+    #             return
+    #         except Exception as e:
+    #             logging.error(f"Attempt {attempt+1}/{MAX_RETRIES} failed: {e}")
+    #             if attempt < MAX_RETRIES - 1:
+    #                 await asyncio.sleep(3 ** attempt)  # Exponential backoff
+    #             else:
+    #                 logging.warning(f"All retries failed. Using fallback title: {fallback_title}")
+    #                 await session_ref.update({
+    #                     "title": fallback_title,
+    #                     "updated_at": firestore.SERVER_TIMESTAMP
+    #                 })
+    #                 return
+        
