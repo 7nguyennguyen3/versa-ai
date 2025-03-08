@@ -7,6 +7,9 @@ interface AuthState {
   name: string | null;
   role: "user" | "admin" | null;
   tokenExpiresAt: string | null;
+  plan: "free" | "pro" | "premium" | "enterprise" | null; // ✅ New field for plan
+  monthlyUploadUsage: number; // ✅ New field for monthly upload usage
+  monthlyUploadLimit: number; // ✅ New field for monthly upload limit
   logout: () => Promise<void>;
   setAuth: (authData: Partial<AuthState>) => void;
   checkStatus: () => Promise<void>; // ✅ New function inside the store
@@ -19,6 +22,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   name: null,
   role: null,
   tokenExpiresAt: null,
+  plan: null,
+  monthlyUploadUsage: 0,
+  monthlyUploadLimit: 0,
 
   logout: async () => {
     await fetch("/api/auth/signout", { method: "POST" });
@@ -29,6 +35,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       name: null,
       role: null,
       tokenExpiresAt: null,
+      plan: null,
+      monthlyUploadUsage: 0,
+      monthlyUploadLimit: 0,
     });
   },
 
@@ -47,6 +56,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         email: data.email || null,
         name: data.name || null,
         role: data.role || null,
+        plan: data.plan || null,
+        monthlyUploadUsage: data.monthlyUploadUsage || 0,
+        monthlyUploadLimit: data.monthlyUploadLimit || 10,
         tokenExpiresAt: data.tokenExpiresAt || null,
       });
     } catch {

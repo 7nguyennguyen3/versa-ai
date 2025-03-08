@@ -152,7 +152,7 @@ const Navbar = () => {
             <div className="flex justify-between items-center mb-8">
               <div className="flex items-center gap-2">
                 <Bot className="w-8 h-8 text-indigo-600" />
-                <span className="text-xl font-semibold">AI Chat</span>
+                <span className="text-xl font-semibold">Versa AI</span>
               </div>
               <button
                 onClick={() => setIsMenuOpen(false)}

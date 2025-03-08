@@ -1,22 +1,26 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useAuthStore } from "../_store/useAuthStore";
+import { Input } from "@/components/ui/input";
 import axios from "axios";
-import { Upload, File, XCircle, Loader2 } from "lucide-react";
+import { File, Loader2, Upload, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useAuthStore } from "../_store/useAuthStore";
 
 const UploadPdfPage = () => {
+  const { monthlyUploadUsage, monthlyUploadLimit } = useAuthStore();
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [pdfName, setPdfName] = useState("");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [fileSizeMB, setFileSizeMB] = useState<number | null>(null); // New state for file size
   const { userId } = useAuthStore();
   const [token, setToken] = useState<string | null>(null);
+
+  const remainingUploadLimit = monthlyUploadLimit - monthlyUploadUsage;
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -43,8 +47,12 @@ const UploadPdfPage = () => {
     if (selectedFile && selectedFile.type === "application/pdf") {
       setFile(selectedFile);
       setError("");
+      // Calculate and set the file size in MB
+      const fileSizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
+      setFileSizeMB(parseFloat(fileSizeMB));
     } else {
       setError("Please select a valid PDF file.");
+      setFileSizeMB(null); // Reset file size if the file is invalid
     }
   };
 
@@ -70,6 +78,16 @@ const UploadPdfPage = () => {
       return;
     }
 
+    if (
+      monthlyUploadUsage + (fileSizeMB ?? file.size) / (1024 * 1024) >
+      remainingUploadLimit
+    ) {
+      setError(
+        `File size exceeds your plan limit. Remaining limit: ${remainingUploadLimit} MB.`
+      );
+      return;
+    }
+
     setUploading(true);
     const formData = new FormData();
     formData.append("pdf", file);
@@ -90,9 +108,11 @@ const UploadPdfPage = () => {
         setError("Session expired. Please login again.");
         router.push("/login");
       } else {
-        setError(
-          err.response?.data?.error || "Upload failed. Please try again."
-        );
+        const errorMessage =
+          typeof err.response?.data?.error === "string"
+            ? err.response.data.error
+            : "Upload failed. Please try again. The format of the PDF might be invalid.";
+        setError(errorMessage);
       }
     } finally {
       setUploading(false);
@@ -101,8 +121,7 @@ const UploadPdfPage = () => {
 
   return (
     <div className="max-w-lg mx-auto min-h-screen flex flex-col justify-center items-center p-6 space-y-6">
-      <h2 className="text-2xl font-semibold">📄 Upload a PDF</h2>
-
+      <h2 className="text-2xl font-semibold">📄 Upload a PDF </h2>
       {/* PDF Name Input */}
       <Input
         type="text"
@@ -118,6 +137,8 @@ const UploadPdfPage = () => {
           <div className="flex flex-col items-center space-y-2">
             <File className="w-10 h-10 text-gray-600" />
             <p className="text-gray-600">{file.name}</p>
+            <p className="text-gray-600">Size: {fileSizeMB} MB</p>{" "}
+            {/* Display file size */}
             <Button variant="destructive" onClick={() => setFile(null)}>
               <XCircle className="w-4 h-4 mr-2" /> Remove File
             </Button>

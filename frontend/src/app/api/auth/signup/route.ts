@@ -35,12 +35,14 @@ export async function POST(request: NextRequest) {
     const newUserRef = db.collection("users").doc(); // Generate a unique ID
     const userId = newUserRef.id;
 
-    // Enforce UserDetail when saving to Firestore
     const userData: UserDetail = {
       id: userId,
-      name: name || "", // Default to empty string if name is not provided
+      plan: "free",
+      monthlyUploadUsage: 0,
+      monthlyUploadLimit: 10,
+      name: name || "user",
       email,
-      role: "user", // Default role
+      role: "user",
     };
 
     await newUserRef.set({

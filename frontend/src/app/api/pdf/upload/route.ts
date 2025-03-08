@@ -1,4 +1,5 @@
 import { storage, db } from "@/lib/firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
@@ -37,6 +38,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2); // Convert to MB
+    const userData = userDoc.data();
+    if (!userData) {
+      return NextResponse.json(
+        { error: "User data not found" },
+        { status: 404 }
+      );
+    }
+
+    if (
+      userData.monthlyUploadUsage + fileSizeMB >
+      userData.monthlyUploadLimit
+    ) {
+      return NextResponse.json(
+        {
+          error: "Monthly upload limit exceeded",
+          limit: userData.monthlyUploadLimit,
+          usage: userData.monthlyUploadUsage,
+          remaining: userData.monthlyUploadLimit - userData.monthlyUploadUsage,
+        },
+        { status: 403 }
+      );
+    }
     // Generate unique PDF ID
     const pdfId = uuidv4();
 
@@ -67,16 +98,17 @@ export async function POST(request: NextRequest) {
       pdfUrl,
       uploadedAt: new Date().toISOString(),
       ingestionStatus: "pending", // Add ingestion status
+      fileSizeMB,
     };
 
     await db.collection("pdfs").doc(pdfId).set(pdfDoc);
 
     // Update the cacheBuster for the user
-    const cacheBuster = Date.now(); // Current timestamp
-    await db
-      .collection("users")
-      .doc(userId)
-      .set({ cacheBuster }, { merge: true });
+    await userRef.update({
+      monthlyUploadUsage: FieldValue.increment(Number(fileSizeMB)),
+      cacheBuster: Date.now(),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
 
     // Background task to send to Python backend
     const pythonApiUrl = `${process.env.NEXT_PUBLIC_CHAT_ENDPOINT}/upsert_pdf`;
@@ -132,6 +164,7 @@ export async function POST(request: NextRequest) {
       pdfName,
       pdfUrl,
       message: "PDF uploaded successfully. Processing in the background...",
+      fileSizeMB,
     });
   } catch (error) {
     console.error("Upload failed:", error);

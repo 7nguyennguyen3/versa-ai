@@ -60,6 +60,9 @@ export async function GET(request: NextRequest) {
         name: user.name,
         email: user.email,
         role: "user",
+        plan: "free",
+        monthlyUploadUsage: 0,
+        monthlyUploadLimit: 10,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

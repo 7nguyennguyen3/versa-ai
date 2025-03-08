@@ -73,6 +73,9 @@ export async function GET(request: NextRequest) {
         email: primaryEmail,
         avatar: user.avatar_url,
         role: "user",
+        plan: "free",
+        monthlyUploadUsage: 0,
+        monthlyUploadLimit: 10,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

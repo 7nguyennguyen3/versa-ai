@@ -216,6 +216,13 @@ export const APP_ROADMAP: RoadmapProps[] = [
   },
 ];
 
+export const PLAN_LIMITS = {
+  free: 10 * 1024 * 1024, // 10 MB in bytes
+  pro: 100 * 1024 * 1024, // 100 MB in bytes
+  premium: 1024 * 1024 * 1024, // 1 GB in bytes
+  enterprise: 10 * 1024 * 1024 * 1024, // 10 GB in bytes
+};
+
 export const MODEL_OPTIONS = [
   {
     name: "GPT-4o-Mini",

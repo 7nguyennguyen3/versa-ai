@@ -3,10 +3,12 @@ export interface UserDetail {
   name: string;
   email: string;
   role: "user";
-  plan?: "free" | "pro" | "premium" | "enterprise";
+  plan: "free" | "pro" | "premium" | "enterprise";
   password?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  monthlyUploadUsage: number; // Track monthly upload usage in bytes
+  monthlyUploadLimit: number; // Track monthly upload limit in bytes
 }
 
 export interface AIMessageRequest {
