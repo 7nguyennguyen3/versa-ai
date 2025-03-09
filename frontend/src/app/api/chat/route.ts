@@ -22,13 +22,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const chatSessions = sessionsSnapshot.docs.map((doc) => ({
-      chat_session_id: doc.id,
-      chat_history: doc.data().chat_history || [],
-      last_activity: doc.data().last_activity || null,
-      latest_pdfId: doc.data().latest_pdfId || null,
-      title: doc.data().title || null,
-    }));
+    const chatSessions = sessionsSnapshot.docs.map((doc) => {
+      const data = doc.data();
+      const lastActivity = data.last_activity
+        ? data.last_activity.toDate() // Convert Firestore Timestamp to JavaScript Date
+        : null;
+
+      return {
+        chat_session_id: doc.id,
+        chat_history: data.chat_history || [],
+        last_activity: lastActivity, // Send as JavaScript Date
+        latest_pdfId: data.latest_pdfId || null,
+        title: data.title || null,
+      };
+    });
 
     return NextResponse.json(chatSessions, { status: 200 });
   } catch (error) {

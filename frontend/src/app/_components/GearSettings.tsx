@@ -30,7 +30,6 @@ const GearSettings: React.FC<GearSettingsProps> = ({ userId }) => {
     pdfOptions,
     chatOptions,
     isLoadingOptions,
-    error,
     setCurrentPdf,
     setCurrentChat,
     setModel,
@@ -103,24 +102,36 @@ const GearSettings: React.FC<GearSettingsProps> = ({ userId }) => {
               ) : pdfOptions.length === 0 ? (
                 <div className="text-sm text-gray-500">No PDFs found</div>
               ) : (
-                pdfOptions.map((pdf) => (
-                  <SelectItem
-                    key={pdf.pdfId}
-                    value={pdf.pdfUrl}
-                    disabled={
-                      pdf.pdfIngestionStatus === "pending" ||
-                      pdf.pdfIngestionStatus === "failed"
-                    }
-                  >
-                    <div className="flex items-center gap-2">
-                      {(pdf.pdfIngestionStatus === "pending" ||
-                        pdf.pdfIngestionStatus === "failed") && (
-                        <Lock className="w-4 h-4 text-gray-500" />
-                      )}
-                      {pdf.pdfName}
-                    </div>
-                  </SelectItem>
-                ))
+                [...pdfOptions]
+                  .sort((a, b) => {
+                    const aTimestamp = a.uploadedAt
+                      ? new Date(a.uploadedAt).getTime()
+                      : 0;
+
+                    const bTimestamp = b.uploadedAt
+                      ? new Date(b.uploadedAt).getTime()
+                      : 0;
+
+                    return bTimestamp - aTimestamp; // Sort in descending order (newest first)
+                  })
+                  .map((pdf) => (
+                    <SelectItem
+                      key={pdf.pdfId}
+                      value={pdf.pdfUrl}
+                      disabled={
+                        pdf.pdfIngestionStatus === "pending" ||
+                        pdf.pdfIngestionStatus === "failed"
+                      }
+                    >
+                      <div className="flex items-center gap-2">
+                        {(pdf.pdfIngestionStatus === "pending" ||
+                          pdf.pdfIngestionStatus === "failed") && (
+                          <Lock className="w-4 h-4 text-gray-500" />
+                        )}
+                        {pdf.pdfName}
+                      </div>
+                    </SelectItem>
+                  ))
               )}
             </SelectContent>
           </Select>
@@ -143,14 +154,26 @@ const GearSettings: React.FC<GearSettingsProps> = ({ userId }) => {
                   No chat history found
                 </div>
               ) : (
-                chatOptions.map((chat) => (
-                  <SelectItem
-                    key={chat.chat_session_id}
-                    value={chat.chat_session_id}
-                  >
-                    {chat.title ?? chat.chat_session_id}
-                  </SelectItem>
-                ))
+                [...chatOptions]
+                  .sort((a, b) => {
+                    const aTimestamp = a.last_activity
+                      ? new Date(a.last_activity).getTime()
+                      : 0;
+
+                    const bTimestamp = b.last_activity
+                      ? new Date(b.last_activity).getTime()
+                      : 0;
+
+                    return bTimestamp - aTimestamp; // Sort in descending order (newest first)
+                  })
+                  .map((chat) => (
+                    <SelectItem
+                      key={chat.chat_session_id}
+                      value={chat.chat_session_id}
+                    >
+                      {chat.title ?? chat.chat_session_id}
+                    </SelectItem>
+                  ))
               )}
             </SelectContent>
           </Select>

@@ -1,15 +1,16 @@
 "use client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { PlusCircleIcon, Send, Settings } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PlusCircleIcon, Settings } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { sendMessage } from "../_hooks/useChatSend";
 import { useAppStore } from "../_store/useAppStore";
 import GearSettings from "./GearSettings";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface ChatComponentProps {
   userId: string | null;
@@ -160,8 +161,9 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
                   </span>
                 </div>
                 <ReactMarkdown
-                  className="whitespace-pre-wrap prose text-lg"
-                  remarkPlugins={[remarkGfm]}
+                  className="text-lg"
+                  remarkPlugins={[remarkGfm]} // For tables and other GFM features
+                  rehypePlugins={[rehypeRaw]} // Enable raw HTML parsing
                 >
                   {msg.content}
                 </ReactMarkdown>
@@ -198,8 +200,9 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
                   <span className="text-sm font-medium">Assistant</span>
                 </div>
                 <ReactMarkdown
-                  className="whitespace-pre-wrap prose text-lg"
-                  remarkPlugins={[remarkGfm]}
+                  className="text-lg"
+                  remarkPlugins={[remarkGfm]} // For tables and other GFM features
+                  rehypePlugins={[rehypeRaw]} // Enable raw HTML parsing
                 >
                   {streamingResponse}
                 </ReactMarkdown>

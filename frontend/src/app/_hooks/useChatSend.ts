@@ -80,7 +80,7 @@ export const sendMessage = async ({
     let lastUpdate = Date.now();
 
     eventSource.onmessage = (event) => {
-      buffer += event.data.replace(/<br>/g, "\n");
+      buffer += event.data;
 
       // Throttle updates to avoid excessive re-renders
       const now = Date.now();
@@ -100,7 +100,7 @@ export const sendMessage = async ({
       }
       eventSource.close();
       setChatLoading(false);
-      const finalContent = botResponse.replace(/<br>/g, "\n");
+      const finalContent = botResponse;
       addMessage({ role: "ai", content: finalContent });
       onStreamComplete(finalContent);
     });

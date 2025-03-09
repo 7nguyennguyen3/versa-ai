@@ -89,7 +89,7 @@ async def chat_send(request: Request, message_request: MessageRequest, user_id: 
                 chat_session_id, new_title
             )
         )
-
+    
     message_data = json.dumps({
         "chat_session_id": chat_session_id,
         "message": user_message,
@@ -105,7 +105,8 @@ async def chat_send(request: Request, message_request: MessageRequest, user_id: 
                 content={"error": "Redis is unavailable"}
             )
 
-        await redis_instance.lpush("message_queue", message_data)
+        queue_name = f"message_queue:{chat_session_id}"
+        await redis_instance.lpush(queue_name, message_data)
     except Exception as e:
         logging.error(f"❌ Failed to push message to Redis: {e}")
         return JSONResponse(
@@ -139,7 +140,8 @@ async def chat_stream(request: Request, chat_session_id: str):
                         yield "event: error\ndata: Redis instance is not available\n\n"
                         continue
 
-                    message = await redis_instance.brpop("message_queue")
+                    queue_name = f"message_queue:{chat_session_id}"
+                    message = await redis_instance.brpop(queue_name)
 
                     if not message:
                         continue  # Ignore empty messages
@@ -179,8 +181,8 @@ async def chat_stream(request: Request, chat_session_id: str):
                     ai_response_chunks = []
                     async for chunk in retrieval_chain.astream(user_message):
                         if hasattr(chunk, "content"):  # Check if chunk has content
-                            ai_response_chunks.append(chunk.content)
                             content = chunk.content.replace("\n", "<br>")
+                            ai_response_chunks.append(content)
                             yield f"data: {content}\n\n"
 
                     ai_response = "".join(ai_response_chunks)

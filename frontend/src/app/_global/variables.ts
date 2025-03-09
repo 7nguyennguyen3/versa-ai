@@ -96,11 +96,31 @@ export const APP_ROADMAP: RoadmapProps[] = [
   },
   {
     devName: "Rename Chat Session to be more descriptive",
-    status: "Not Started",
+    status: "Completed",
     description: "Rename chat session to be more descriptive.",
-    startDate: new Date(),
+    startDate: new Date("03/07/2025"),
+    endDate: new Date("03/07/2025"),
+    comments: "Utilized another LLM chain to generate a more descriptive title",
+    priority: "High",
+  },
+  {
+    devName: "Enhanced Data Parsing/Display for Chat",
+    status: "In Progress",
+    description: "Improve data parsing and display in the chat interface.",
+    startDate: new Date("3/08/2025"),
     endDate: new Date(),
-    comments: "",
+    comments:
+      "Currently using React Markdown, better spacing with proper <br> and \n parsing",
+    priority: "Medium",
+  },
+  {
+    devName: "Add Upload Limit Feature",
+    status: "Completed",
+    description: "Limit free tier user to 10 mb per month",
+    startDate: new Date("3/07/2025"),
+    endDate: new Date("3/07/2025"),
+    comments:
+      "Updated interface and current-user route and uploadp page to handle upload limit",
     priority: "High",
   },
   {
@@ -122,15 +142,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     comments: "",
     priority: "Low",
   },
-  {
-    devName: "Enhanced Data Parsing/Display for Chat",
-    status: "On Hold",
-    description: "Improve data parsing and display in the chat interface.",
-    startDate: new Date(),
-    endDate: new Date(),
-    comments: "Currently using React Markdown",
-    priority: "Medium",
-  },
+
   {
     devName: "Cookies Auth for SSE Route",
     status: "Not Started",
