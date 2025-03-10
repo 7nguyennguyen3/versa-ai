@@ -138,7 +138,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     description: "Cron job or API to reset users upload limit monthly",
     startDate: new Date("3/09/2025"),
     endDate: new Date("3/09/2025"),
-    comments: "Used vercel cron job",
+    comments: "Used cron-job.org",
     priority: "Medium",
   },
   {

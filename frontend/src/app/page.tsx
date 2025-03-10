@@ -1,26 +1,21 @@
 "use client";
 
-import React from "react";
 import { Button } from "@/components/ui/button";
 import {
-  UploadCloud,
-  MessageSquare,
-  FileText,
-  Star,
-  Bot,
-  Settings,
-} from "lucide-react";
-import Link from "next/link";
-import {
   Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
 } from "@/components/ui/card";
+import { FileText, MessageSquare, Star, UploadCloud } from "lucide-react";
+import Link from "next/link";
+import { useAuthStore } from "./_store/useAuthStore";
 
 const Homepage = () => {
+  const { authenticated } = useAuthStore();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-gray-100 flex flex-col items-center text-center px-6 py-12">
       {/* Hero Section */}
@@ -61,7 +56,9 @@ const Homepage = () => {
             </CardHeader>
             <CardFooter className="flex justify-center">
               <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-4 rounded-lg shadow-md">
-                Learn More
+                <Link href={authenticated ? "/chat" : "/auth/signin"}>
+                  Learn More
+                </Link>
               </Button>
             </CardFooter>
           </Card>
@@ -79,9 +76,11 @@ const Homepage = () => {
               </CardDescription>
             </CardHeader>
             <CardFooter className="flex justify-center">
-              <Button className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-8 py-4 rounded-lg shadow-md">
-                Try Now
-              </Button>
+              <Link href={authenticated ? "/upload-pdf" : "/auth/signin"}>
+                <Button className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-8 py-4 rounded-lg shadow-md">
+                  Try Now
+                </Button>
+              </Link>
             </CardFooter>
           </Card>
         </div>

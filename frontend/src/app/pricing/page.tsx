@@ -54,7 +54,7 @@ const pricingTiers = [
 
 const PricingPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col items-center px-4 py-8 md:py-12">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col justify-center items-center px-4 py-8 md:py-12">
       <div className="max-w-6xl w-full">
         {/* Header Section */}
         <div className="text-center mb-8 md:mb-12">

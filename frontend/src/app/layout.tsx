@@ -1,17 +1,13 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Recursive } from "next/font/google";
-import "./globals.css";
-import Navbar from "./_components/Navbar";
-import Footer from "./_components/Footer";
 import { Toaster } from "@/components/ui/sonner";
+import type { Metadata } from "next";
+import { Geist, Recursive } from "next/font/google";
+import Footer from "./_components/Footer";
+import Navbar from "./_components/Navbar";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -41,6 +37,8 @@ export default function RootLayout({
         <Navbar />
         {children}
         <Toaster richColors />
+        <SpeedInsights />
+        <Footer />
       </body>
     </html>
   );
