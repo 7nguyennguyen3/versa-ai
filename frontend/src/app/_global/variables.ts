@@ -104,6 +104,15 @@ export const APP_ROADMAP: RoadmapProps[] = [
     priority: "High",
   },
   {
+    devName: "Add feature for manual rename chat session",
+    status: "Completed",
+    description: "Let user manually rename chat session.",
+    startDate: new Date("03/09/2025"),
+    endDate: new Date("03/09/2025"),
+    comments: "Created a new endpoint to update chat session title",
+    priority: "Low",
+  },
+  {
     devName: "Enhanced Data Parsing/Display for Chat",
     status: "In Progress",
     description: "Improve data parsing and display in the chat interface.",
@@ -124,6 +133,15 @@ export const APP_ROADMAP: RoadmapProps[] = [
     priority: "High",
   },
   {
+    devName: "Add Feature to Reset Users Upload Limit Monthly",
+    status: "Completed",
+    description: "Cron job or API to reset users upload limit monthly",
+    startDate: new Date("3/09/2025"),
+    endDate: new Date("3/09/2025"),
+    comments: "Used vercel cron job",
+    priority: "Medium",
+  },
+  {
     devName: "Optimize Uploaded PDF",
     status: "Not Started",
     description:
@@ -134,15 +152,15 @@ export const APP_ROADMAP: RoadmapProps[] = [
     priority: "Medium",
   },
   {
-    devName: "Custom No PDF Chat",
-    status: "Not Started",
-    description: "Implement chat functionality without PDF support.",
+    devName: "Dashboard & Settings Page",
+    status: "In Progress",
+    description:
+      "Update the dashboard and setting page to include functionality.",
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
-    priority: "Low",
+    priority: "Medium",
   },
-
   {
     devName: "Cookies Auth for SSE Route",
     status: "Not Started",
@@ -189,6 +207,15 @@ export const APP_ROADMAP: RoadmapProps[] = [
     priority: "Medium",
   },
   {
+    devName: "Custom No PDF Chat",
+    status: "Not Started",
+    description: "Implement chat functionality without PDF support.",
+    startDate: new Date(),
+    endDate: new Date(),
+    comments: "",
+    priority: "Low",
+  },
+  {
     devName: "Implement Custom Memory",
     status: "Not Started",
     description: "Add custom memory implementation for chat sessions.",
@@ -197,17 +224,6 @@ export const APP_ROADMAP: RoadmapProps[] = [
     comments: "",
     priority: "Medium",
   },
-  {
-    devName: "Dashboard & Settings Page",
-    status: "Not Started",
-    description:
-      "Update the dashboard and setting page to include functionality.",
-    startDate: new Date(),
-    endDate: new Date(),
-    comments: "",
-    priority: "Medium",
-  },
-
   {
     devName: "Advanced Rate Limiting",
     status: "Not Started",

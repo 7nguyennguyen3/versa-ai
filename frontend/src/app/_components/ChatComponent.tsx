@@ -17,14 +17,8 @@ interface ChatComponentProps {
 }
 
 const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
-  const {
-    messages,
-    isChatLoading,
-    fetchChatOptions,
-    fetchPdfOptions,
-    currentChatId,
-    currentPdfId,
-  } = useAppStore();
+  const { messages, isChatLoading, currentChatId, currentPdfId } =
+    useAppStore();
   const [message, setMessage] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [streamingResponse, setStreamingResponse] = useState("");
@@ -47,13 +41,6 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
   }, []);
 
   useEffect(() => {
-    if (userId) {
-      fetchChatOptions(userId);
-      fetchPdfOptions(userId);
-    }
-  }, [userId, fetchChatOptions, fetchPdfOptions]);
-
-  useEffect(() => {
     const fetchToken = async () => {
       try {
         const response = await fetch("/api/auth/get-token");
@@ -70,9 +57,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
     if (!message.trim() || !token) return;
 
     if (!currentChatId && !currentPdfId) {
-      setError(
-        "Please select a chat session or a PDF before sending a message."
-      );
+      setError("Please select a PDF before sending a message.");
       return;
     }
 

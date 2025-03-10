@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Recursive } from "next/font/google";
 import "./globals.css";
 import Navbar from "./_components/Navbar";
 import Footer from "./_components/Footer";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,8 +40,7 @@ export default function RootLayout({
       >
         <Navbar />
         {children}
-        {/* Hide Footer on the chat page */}
-        {pathname !== "/chat" && <Footer />}
+        <Toaster richColors />
       </body>
     </html>
   );
