@@ -292,7 +292,7 @@ const Demopage = () => {
                       </span>
                     </div>
                     <ReactMarkdown
-                      className="whitespace-pre-wrap prose text-lg"
+                      className="whitespace-pre-wrap prose text-sm sm:text-lg"
                       remarkPlugins={[remarkGfm]}
                     >
                       {msg.content}
@@ -330,7 +330,7 @@ const Demopage = () => {
                       <span className="text-sm font-medium">Assistant</span>
                     </div>
                     <ReactMarkdown
-                      className="whitespace-pre-wrap prose text-lg"
+                      className="whitespace-pre-wrap prose text-sm sm:text-lg"
                       remarkPlugins={[remarkGfm]}
                     >
                       {chatData}
@@ -347,7 +347,7 @@ const Demopage = () => {
                 <div className="flex flex-col">
                   <textarea
                     ref={textareaRef}
-                    className="text-lg p-3 w-full focus:outline-none custom-scrollbar resize-none"
+                    className="text-sm sm:text-lg p-3 w-full focus:outline-none custom-scrollbar resize-none"
                     placeholder="Type your message..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}

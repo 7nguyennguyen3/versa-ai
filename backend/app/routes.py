@@ -5,13 +5,14 @@ import json
 import asyncio
 import logging
 import os
+import time
+from typing import Optional
 from .pinecone_retriever_chain import create_chain
 from firebase_admin import firestore  
 from .verify_access import get_current_user
 from .basic_chain import generate_chat_title
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from typing import Optional
 
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
@@ -72,6 +73,7 @@ async def chat_send(request: Request, message_request: MessageRequest, user_id: 
     isNewSession = message_request.isNewSession
 
     logging.info(f"🚀 Received message for chat session {chat_session_id} from user {user_id}. Is new session? {isNewSession}")
+    logging.info(f"🚀 User message: {user_message}")
 
     user_exists = await verify_user(user_id)
     if not user_exists:
@@ -123,26 +125,59 @@ async def chat_send(request: Request, message_request: MessageRequest, user_id: 
         # Store user message first
         await session_manager.add_message(chat_session_id, user_id, pdf_id, "human", str(user_message))
 
-        # Process AI response and stream via Redis Pub/Sub
+        # Process AI response and stream via Redis Pub/Sub (MODIFIED)
         async def publish_response():
-            ai_response_chunks = []
+            BATCH_SIZE = 5  # Number of chunks to batch together
+            MAX_DELAY = 0.1  # Max delay between sends in seconds
+            chunk_buffer = []
+            all_chunks = []
+            last_send = time.time()
+            
             async for chunk in retrieval_chain.astream(user_message):
                 if hasattr(chunk, "content"):
                     content = chunk.content.replace("\n", "<br>")
-                    ai_response_chunks.append(content)
-                    # Publish each chunk to Redis
-                    await redis_instance.publish(
-                        f"chat:{chat_session_id}",
-                        json.dumps({"type": "chunk", "content": content})
-                    )
+                    chunk_buffer.append(content)
+                    all_chunks.append(content)
+                    
+                    # Send if buffer full or max delay reached
+                    if len(chunk_buffer) >= BATCH_SIZE or (time.time() - last_send) > MAX_DELAY:
+                        await redis_instance.publish(
+                            f"chat:{chat_session_id}",
+                            json.dumps({
+                                "type": "chunk",
+                                "content": chunk_buffer,
+                                "timestamp": time.time()
+                            })
+                        )
+                        chunk_buffer = []
+                        last_send = time.time()
             
-            # Publish completion and store final message
-            ai_response = "".join(ai_response_chunks)
+            # Send remaining chunks
+            if chunk_buffer:
+                await redis_instance.publish(
+                    f"chat:{chat_session_id}",
+                    json.dumps({
+                        "type": "chunk",
+                        "content": chunk_buffer,
+                        "timestamp": time.time()
+                    })
+                )
+            
+            # Final completion message
             await redis_instance.publish(
                 f"chat:{chat_session_id}",
-                json.dumps({"type": "complete"})
+                json.dumps({
+                    "type": "complete",
+                    "timestamp": time.time()
+                })
             )
-            await session_manager.add_message(chat_session_id, user_id, pdf_id, "ai", ai_response)
+            await session_manager.add_message(
+                chat_session_id, 
+                user_id, 
+                pdf_id, 
+                "ai", 
+                "".join(all_chunks)
+            )
 
         # Start processing in background
         asyncio.create_task(publish_response())
@@ -153,6 +188,13 @@ async def chat_send(request: Request, message_request: MessageRequest, user_id: 
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"error": "Internal Server Error"}
         )
+    
+    if isNewSession:
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={"status": "New chat session created and title generated", "new_title": new_title}
+        )
+
     
     return JSONResponse(
         status_code=status.HTTP_200_OK,
@@ -170,26 +212,34 @@ async def chat_stream(request: Request, chat_session_id: str):
         pubsub = redis.pubsub()
         try:
             await pubsub.subscribe(f"chat:{chat_session_id}")
+            last_activity = time.time()
+            KEEP_ALIVE_INTERVAL = 15  # Seconds between keep-alives
             
             while True:
                 try:
+                    # Check for messages more frequently (MODIFIED)
                     message = await pubsub.get_message(
                         ignore_subscribe_messages=True,
-                        timeout=1.0
+                        timeout=0.05  # Reduced from 1.0 to 0.05 seconds
                     )
                     
                     if message:
+                        last_activity = time.time()
                         data = json.loads(message["data"])
                         
                         if data["type"] == "chunk":
-                            yield f"data: {data['content']}\n\n"
+                            # Split batched chunks into individual messages (NEW)
+                            for chunk in data["content"]:
+                                yield f"data: {chunk}\n\n"
                         elif data["type"] == "complete":
                             yield "event: end\ndata: \n\n"
                             break
-                            
-                    # Yield keep-alive comment
-                    yield ":keep-alive\n\n"
                     
+                    # Send keep-alive only if inactive (MODIFIED)
+                    if (time.time() - last_activity) > KEEP_ALIVE_INTERVAL:
+                        yield ":keep-alive\n\n"
+                        last_activity = time.time()
+                        
                 except asyncio.TimeoutError:
                     continue
                 except Exception as e:
@@ -210,7 +260,8 @@ async def chat_stream(request: Request, chat_session_id: str):
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
-            "Connection": "keep-alive"
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"  # Added to prevent proxy buffering
         }
     )
 
@@ -219,6 +270,7 @@ async def health_check():
     return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
 
 @router.post("/demo_chat_send")
+@limiter.limit("10/minute")
 async def demo_chat_send(request: Request, messageRequest: DemoMessageRequest):
     """Endpoint to send a message for a demo chat session."""
 

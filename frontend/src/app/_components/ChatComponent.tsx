@@ -146,7 +146,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
                   </span>
                 </div>
                 <ReactMarkdown
-                  className="text-lg"
+                  className="text-sm sm:text-lg"
                   remarkPlugins={[remarkGfm]} // For tables and other GFM features
                   rehypePlugins={[rehypeRaw]} // Enable raw HTML parsing
                 >
@@ -185,7 +185,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
                   <span className="text-sm font-medium">Assistant</span>
                 </div>
                 <ReactMarkdown
-                  className="text-lg"
+                  className="text-sm sm:text-lg"
                   remarkPlugins={[remarkGfm]} // For tables and other GFM features
                   rehypePlugins={[rehypeRaw]} // Enable raw HTML parsing
                 >
@@ -208,7 +208,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
             <div className="flex flex-col">
               <textarea
                 ref={textareaRef}
-                className="text-lg p-3 w-full focus:outline-none custom-scrollbar resize-none"
+                className="text-sm sm:text-lg p-3 w-full focus:outline-none custom-scrollbar resize-none"
                 placeholder="Type your message..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}

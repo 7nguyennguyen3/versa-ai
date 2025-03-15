@@ -42,9 +42,15 @@ async def background_flush_task(redis_instance, firestore_db):
                 session_ref = firestore_db.collection("sessions").document(chat_session_id)
                 session_doc = session_ref.get()
 
+                # Get chat history from Firestore
                 existing_chat_history = session_doc.to_dict().get("chat_history", []) if session_doc.exists else []
-                is_new_session = len(existing_chat_history) <= 2  # True if chat_history has 2 or fewer messages
-                logging.info(f"This session is new: {is_new_session}")
+
+                # Get chat history from Redis
+                redis_chat_history = session_data.get("chat_history", [])  # Assuming session_data is from Redis
+                redis_msg_count = len(redis_chat_history)
+
+                # A session is new if Firestore chat_history is empty AND Redis chat_history has exactly 2 messages
+                is_new_session = (len(existing_chat_history) == 0 and redis_msg_count == 2)
 
                 should_flush = (
                     is_new_session or  # NEW sessions should flush immediately
@@ -53,7 +59,7 @@ async def background_flush_task(redis_instance, firestore_db):
                 )
 
                 if not should_flush:
-                    continue  # Skip flushing if conditions are not met
+                    continue  # Skip flushing if conditions are not met 
 
                 if session_data:
                     try:
@@ -107,7 +113,7 @@ async def background_flush_task(redis_instance, firestore_db):
         except Exception as e:
             logging.error(f"❌ Error in background_flush_task: {e}")
 
-        await asyncio.sleep(20)
+        await asyncio.sleep(30)
 
 async def cleanup_stale_flush_keys(redis_instance):
     while True:
