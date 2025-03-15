@@ -46,6 +46,7 @@ async def verify_user(user_id: str) -> bool:
         return False  # Assume the user does not exist in case of failure
 
 @router.post("/upsert_pdf")
+@limiter.limit("10/minute")
 async def upsert_pdf(request: Request, body: PDFIngestRequest, user_id: str = Depends(get_current_user)):
     task_data = json.dumps({
         "pdfId": body.pdfId,
@@ -72,11 +73,10 @@ async def chat_send(request: Request, message_request: MessageRequest, user_id: 
 
     logging.info(f"🚀 Received message for chat session {chat_session_id} from user {user_id}. Is new session? {isNewSession}")
 
-
     user_exists = await verify_user(user_id)
     if not user_exists:
         return JSONResponse(
-            status_code=status.HTTP_201_CREATED,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             content={"error": "User not found"}
         )
     
@@ -89,13 +89,6 @@ async def chat_send(request: Request, message_request: MessageRequest, user_id: 
                 chat_session_id, new_title
             )
         )
-    
-    message_data = json.dumps({
-        "chat_session_id": chat_session_id,
-        "message": user_message,
-        "pdf_id": pdf_id,
-        "userId": user_id,
-    })
 
     try:
         redis_instance = await request.app.state.redis_instance
@@ -105,103 +98,121 @@ async def chat_send(request: Request, message_request: MessageRequest, user_id: 
                 content={"error": "Redis is unavailable"}
             )
 
-        queue_name = f"message_queue:{chat_session_id}"
-        await redis_instance.lpush(queue_name, message_data)
+        # Get chat history and process message
+        session_manager = request.app.state.session_manager_firebase
+        chat_history = await session_manager.get_history(chat_session_id)
+
+        # History processing logic (same as before)
+        word_count = 0
+        recent_history = []
+        for entry in reversed(chat_history[-6:]):
+            msg_content = entry.get("content", "")
+            words_in_msg = len(msg_content.split())
+
+            if word_count + words_in_msg > 1000 and len(recent_history) >= 4:
+                break
+
+            recent_history.append(entry)
+            word_count += words_in_msg
+
+        recent_history.reverse()
+
+        # Create processing chain
+        retrieval_chain = create_chain(recent_history, user_id, pdf_id)
+
+        # Store user message first
+        await session_manager.add_message(chat_session_id, user_id, pdf_id, "human", str(user_message))
+
+        # Process AI response and stream via Redis Pub/Sub
+        async def publish_response():
+            ai_response_chunks = []
+            async for chunk in retrieval_chain.astream(user_message):
+                if hasattr(chunk, "content"):
+                    content = chunk.content.replace("\n", "<br>")
+                    ai_response_chunks.append(content)
+                    # Publish each chunk to Redis
+                    await redis_instance.publish(
+                        f"chat:{chat_session_id}",
+                        json.dumps({"type": "chunk", "content": content})
+                    )
+            
+            # Publish completion and store final message
+            ai_response = "".join(ai_response_chunks)
+            await redis_instance.publish(
+                f"chat:{chat_session_id}",
+                json.dumps({"type": "complete"})
+            )
+            await session_manager.add_message(chat_session_id, user_id, pdf_id, "ai", ai_response)
+
+        # Start processing in background
+        asyncio.create_task(publish_response())
+
     except Exception as e:
-        logging.error(f"❌ Failed to push message to Redis: {e}")
+        logging.error(f"❌ Error processing message: {e}")
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"error": "Internal Server Error"}
         )
     
-    if isNewSession:
-        return JSONResponse(
-            status_code=status.HTTP_201_CREATED,
-            content={"status": "Message received and session created",
-                     "new_title": new_title}
-        )
-
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content={"status": "Message received"}
+        content={"status": "Message processing started"}
     )
 
 @router.get("/chat_stream/{chat_session_id}")
 async def chat_stream(request: Request, chat_session_id: str):
-    async def generate():
+    async def event_generator():
+        redis = await request.app.state.redis_instance
+        if not redis:
+            yield "event: error\ndata: Redis unavailable\n\n"
+            return
+
+        pubsub = redis.pubsub()
         try:
+            await pubsub.subscribe(f"chat:{chat_session_id}")
+            
             while True:
                 try:
-                    # Block until a message is available
-                    redis_instance = await request.app.state.redis_instance
-                    session_manager = request.app.state.session_manager_firebase
-                    if redis_instance is None:
-                        logging.error("❌ Redis instance is not available")
-                        yield "event: error\ndata: Redis instance is not available\n\n"
-                        continue
-
-                    queue_name = f"message_queue:{chat_session_id}"
-                    message = await redis_instance.brpop(queue_name)
-
-                    if not message:
-                        continue  # Ignore empty messages
-
-                    _, message_data = message  # Extract message content
-                    data = json.loads(message_data)
-
-                    if data.get("chat_session_id") != chat_session_id:
-                        continue  # Ignore messages from other sessions
-
-                    user_message = data.get("message", "")
-                    pdf_id = data.get("pdf_id", "")
-                    user_id = data.get("userId", "")
-
-                    logging.info(f"Processing user message: {user_message}")
-
-                    chat_history = await session_manager.get_history(chat_session_id)
-
-                    # Dynamically select messages based on word count
-                    word_count = 0
-                    recent_history = []
-                    for entry in reversed(chat_history[-6:]):  # Process last 6 messages
-                        msg_content = entry.get("content", "")
-                        words_in_msg = len(msg_content.split())
-
-                        if word_count + words_in_msg > 1000 and len(recent_history) >= 4:
-                            break  # Stop if over limit but ensure at least 4 messages
-
-                        recent_history.append(entry)  # Append full entry (not just content)
-                        word_count += words_in_msg
-
-                    recent_history.reverse()  # Restore chronological order
-
-                    # retrieval_chain = create_chain(recent_history)
-                    retrieval_chain = create_chain(recent_history, user_id, pdf_id)
-
-                    ai_response_chunks = []
-                    async for chunk in retrieval_chain.astream(user_message):
-                        if hasattr(chunk, "content"):  # Check if chunk has content
-                            content = chunk.content.replace("\n", "<br>")
-                            ai_response_chunks.append(content)
-                            yield f"data: {content}\n\n"
-
-                    ai_response = "".join(ai_response_chunks)
-
-                    await session_manager.add_message(chat_session_id, user_id, pdf_id, "human", str(user_message))
-                    await session_manager.add_message(chat_session_id, user_id, pdf_id, "ai", ai_response)
-                    logging.info(f"Stored AI response for session {chat_session_id}")
-
-                    yield "event: end\ndata: \n\n"
-
+                    message = await pubsub.get_message(
+                        ignore_subscribe_messages=True,
+                        timeout=1.0
+                    )
+                    
+                    if message:
+                        data = json.loads(message["data"])
+                        
+                        if data["type"] == "chunk":
+                            yield f"data: {data['content']}\n\n"
+                        elif data["type"] == "complete":
+                            yield "event: end\ndata: \n\n"
+                            break
+                            
+                    # Yield keep-alive comment
+                    yield ":keep-alive\n\n"
+                    
+                except asyncio.TimeoutError:
+                    continue
                 except Exception as e:
-                    logging.error(f"Error processing message: {e}")
-                    yield "event: error\ndata: Internal processing error\n\n"
+                    logging.error(f"Stream error: {e}")
+                    break
 
-        except Exception as e:
-            logging.error(f"Error in SSE stream: {e}")
-            yield "event: error\ndata: Internal server error\n\n"
+        except asyncio.CancelledError:
+            logging.info(f"Client disconnected from {chat_session_id}")
+        finally:
+            try:
+                await pubsub.unsubscribe(f"chat:{chat_session_id}")
+                await pubsub.close()
+            except Exception as e:
+                logging.error(f"Cleanup error: {e}")
 
-    return StreamingResponse(generate(), media_type="text/event-stream")
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive"
+        }
+    )
 
 @router.head("/health")
 async def health_check():

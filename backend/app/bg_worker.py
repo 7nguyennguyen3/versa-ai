@@ -42,7 +42,8 @@ async def background_flush_task(redis_instance, firestore_db):
                 session_ref = firestore_db.collection("sessions").document(chat_session_id)
                 session_doc = session_ref.get()
 
-                is_new_session = not session_doc.exists  # True if session doesn't exist in Firestore
+                existing_chat_history = session_doc.to_dict().get("chat_history", []) if session_doc.exists else []
+                is_new_session = len(existing_chat_history) <= 2  # True if chat_history has 2 or fewer messages
                 logging.info(f"This session is new: {is_new_session}")
 
                 should_flush = (
@@ -69,7 +70,7 @@ async def background_flush_task(redis_instance, firestore_db):
                         stored_pdf_id = session_doc.to_dict().get("latest_pdfId", "") if session_doc.exists else None
 
                         if is_new_session:
-                            batch.set(session_ref, {
+                            batch.update(session_ref, {
                                 "userId": session_data.get("userId", ""),
                                 "latest_pdfId": latest_pdf_id,  # ✅ Store latest PDF used
                                 "chat_session_id": chat_session_id,

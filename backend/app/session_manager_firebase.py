@@ -58,8 +58,6 @@ class SessionManager:
                 pipe.sadd("active_sessions", chat_session_id)
                 await pipe.execute()
 
-            logging.info(f"✅ Message added to Redis session: {chat_session_id}")
-
 
     async def get_history(self, chat_session_id: str):
         """Retrieve chat history by comparing Firestore and Redis versions, merging only newer messages."""
