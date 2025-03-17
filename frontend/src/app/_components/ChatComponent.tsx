@@ -97,13 +97,14 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
 
   return (
     <div className="bg-white w-full flex justify-center h-screen">
-      <div className="max-w-4xl w-full h-screen flex flex-col p-4">
+      <div className="max-w-4xl w-full h-screen flex flex-col p-1 sm:p-4">
         {/* Note Section */}
-        <div className="flex flex-col items-center text-center space-y-2 p-4 bg-gray-100 rounded-lg shadow-md mb-4">
-          <p className="text-sm text-gray-700">
+        <div className="hidden sm:flex flex-col items-center text-center space-y-2 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg shadow-lg mb-4 border border-blue-100">
+          <p className="text-[13px] text-gray-700">
             <strong>Note:</strong> Utilize the{" "}
-            <span className="inline-flex items-center gap-1 text-blue-500 font-medium align-middle whitespace-nowrap">
-              gear icon <Settings /> and plus icon <PlusCircleIcon />
+            <span className="inline-flex items-center gap-1 text-blue-600 font-medium align-middle whitespace-nowrap">
+              <Settings className="w-4 h-4" /> gear icon and{" "}
+              <PlusCircleIcon className="w-4 h-4" /> plus icon
             </span>{" "}
             inside the input bar to change settings like document or start a new
             chat.
@@ -120,18 +121,14 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
               }`}
             >
               <Card
-                className={`p-4 max-w-[85%] ${
-                  msg.role === "human" ? "bg-black text-white" : "bg-muted-2"
+                className={`p-4 max-w-[95%] sm:max-w-[85%] rounded-2xl shadow-sm hover:shadow-md transition-shadow ${
+                  msg.role === "human" ? "bg-blue-600 text-white" : "bg-gray-50"
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Avatar className="h-6 w-6">
                     {msg.role === "human" ? (
-                      <>
-                        <AvatarFallback className="bg-blue-500">
-                          U
-                        </AvatarFallback>
-                      </>
+                      <AvatarFallback className="bg-blue-500">U</AvatarFallback>
                     ) : (
                       <>
                         <AvatarImage src="/ai-avatar.jpeg" />
@@ -141,14 +138,14 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
                       </>
                     )}
                   </Avatar>
-                  <span className="text-sm font-medium">
+                  <span className="text-[13px] font-medium">
                     {msg.role === "human" ? "You" : "Assistant"}
                   </span>
                 </div>
                 <ReactMarkdown
-                  className="text-sm sm:text-lg"
-                  remarkPlugins={[remarkGfm]} // For tables and other GFM features
-                  rehypePlugins={[rehypeRaw]} // Enable raw HTML parsing
+                  className="text-[13px] sm:text-lg"
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw]}
                 >
                   {msg.content}
                 </ReactMarkdown>
@@ -159,15 +156,15 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
           {/* Loading State */}
           {isChatLoading && !streamingResponse && (
             <div className="flex justify-start">
-              <Card className="p-4 min-w-[85%] min-h-[140px] bg-muted-2">
+              <Card className="p-4 min-w-[85%] min-h-[140px] bg-gray-50 rounded-2xl">
                 <div className="flex items-center gap-2 mb-2">
-                  <Skeleton className="h-6 w-6 rounded-full bg-gray-300/80 dark:bg-gray-700/80" />
-                  <Skeleton className="h-4 w-20 bg-gray-300/80 dark:bg-gray-700/80" />
+                  <Skeleton className="h-6 w-6 rounded-full bg-gray-300/80 animate-pulse" />
+                  <Skeleton className="h-4 w-20 bg-gray-300/80 animate-pulse" />
                 </div>
                 <div className="space-y-2">
-                  <Skeleton className="h-4 w-full bg-gray-300/80 dark:bg-gray-700/80" />
-                  <Skeleton className="h-4 w-[90%] bg-gray-300/80 dark:bg-gray-700/80" />
-                  <Skeleton className="h-4 w-4/5 bg-gray-300/80 dark:bg-gray-700/80" />
+                  <Skeleton className="h-4 w-full bg-gray-300/80 animate-pulse" />
+                  <Skeleton className="h-4 w-[90%] bg-gray-300/80 animate-pulse" />
+                  <Skeleton className="h-4 w-4/5 bg-gray-300/80 animate-pulse" />
                 </div>
               </Card>
             </div>
@@ -176,18 +173,18 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
           {/* Streaming Response */}
           {streamingResponse && (
             <div className="flex justify-start">
-              <Card className="p-4 max-w-[80%] bg-muted">
+              <Card className="p-4 max-w-[80%] bg-gray-50 rounded-2xl">
                 <div className="flex items-center gap-2 mb-2">
                   <Avatar className="h-6 w-6">
                     <AvatarImage src="/ai-avatar.jpeg" />
                     <AvatarFallback>AI</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium">Assistant</span>
+                  <span className="text-[13px] font-medium">Assistant</span>
                 </div>
                 <ReactMarkdown
-                  className="text-sm sm:text-lg"
-                  remarkPlugins={[remarkGfm]} // For tables and other GFM features
-                  rehypePlugins={[rehypeRaw]} // Enable raw HTML parsing
+                  className="text-[13px] sm:text-lg"
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw]}
                 >
                   {streamingResponse}
                 </ReactMarkdown>
@@ -200,15 +197,15 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
         {/* Chat Input with Expanding Textarea */}
         <div className="mt-auto">
           {error && (
-            <div className="text-red-500 text-sm px-2 py-1 bg-red-50 border border-red-200 rounded mb-2">
+            <div className="text-red-500 text-[13px] px-2 py-1 bg-red-50 border border-red-200 rounded mb-2">
               ⚠️ {error}
             </div>
           )}
-          <div className="border rounded-lg px-2 py-1">
+          <div className="border rounded-lg px-2 py-1 bg-gray-50 shadow-sm">
             <div className="flex flex-col">
               <textarea
                 ref={textareaRef}
-                className="text-sm sm:text-lg p-3 w-full focus:outline-none custom-scrollbar resize-none"
+                className="text-[13px] sm:text-lg p-3 w-full focus:outline-none custom-scrollbar resize-none bg-transparent"
                 placeholder="Type your message..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -217,7 +214,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
                 }
                 disabled={isChatLoading}
                 style={{
-                  minHeight: "100px",
+                  minHeight: "40px",
                   maxHeight: "360px",
                   overflowY: "auto",
                 }}
@@ -227,7 +224,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId }) => {
                 <Button
                   onClick={handleSendMessage}
                   disabled={isChatLoading}
-                  className="h-[40px] w-16 p-2 flex items-center justify-center text-[16px]"
+                  className="h-[40px] w-16 p-2 flex items-center justify-center text-[16px] bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                 >
                   Send
                 </Button>

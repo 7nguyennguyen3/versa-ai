@@ -19,7 +19,7 @@ const pricingTiers = [
   },
   {
     name: "Pro",
-    price: "$19 /mo",
+    price: "$9 /mo",
     features: {
       aiModel: "Standard AI Model",
       uploadLimit: "100MB / file",
@@ -30,10 +30,10 @@ const pricingTiers = [
   },
   {
     name: "Premium",
-    price: "$49 /mo",
+    price: "$19 /mo",
     features: {
       aiModel: "Advanced AI Model",
-      uploadLimit: "300MB / file",
+      uploadLimit: "500MB / file",
       apiAccess: "Full API + Batch Processing",
       prioritySupport: true,
     },

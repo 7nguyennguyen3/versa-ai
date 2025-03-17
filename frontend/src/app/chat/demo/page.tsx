@@ -198,7 +198,7 @@ const Demopage = () => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 130)}px`;
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
     }
   }, [message]);
 
@@ -243,7 +243,7 @@ const Demopage = () => {
         <div className="bg-white w-full flex justify-center h-screen">
           <div className="max-w-4xl w-full h-screen flex flex-col p-4">
             {/* Note Section */}
-            <div className="flex flex-col items-center text-center space-y-2 p-4 bg-gray-100 rounded-lg shadow-md mb-4">
+            <div className="hidden sm:flex flex-col items-center text-center space-y-2 p-4 bg-gray-100 rounded-lg shadow-md mb-4">
               <p className="text-sm text-gray-700">
                 <strong>Note:</strong> Memory & previous conversations are
                 disabled in this demo. Use the{" "}
@@ -264,7 +264,7 @@ const Demopage = () => {
                   }`}
                 >
                   <Card
-                    className={`p-4 max-w-[85%] ${
+                    className={`p-4 max-w-[95%] sm:max-w-[85%] ${
                       msg.role === "human"
                         ? "bg-black text-white"
                         : "bg-muted-2"
@@ -304,7 +304,7 @@ const Demopage = () => {
               {/* Loading State */}
               {isChatLoading && !chatData && (
                 <div className="flex justify-start">
-                  <Card className="p-4 min-w-[85%] min-h-[140px] bg-muted-2">
+                  <Card className="p-4 max-w-[95%] sm:min-w-[85%] min-h-[140px] bg-muted-2">
                     <div className="flex items-center gap-2 mb-2">
                       <Skeleton className="h-6 w-6 rounded-full bg-gray-300/80 dark:bg-gray-700/80" />
                       <Skeleton className="h-4 w-20 bg-gray-300/80 dark:bg-gray-700/80" />
@@ -321,7 +321,7 @@ const Demopage = () => {
               {/* Streaming Response */}
               {chatData && (
                 <div className="flex justify-start">
-                  <Card className="p-4 max-w-[80%] bg-muted">
+                  <Card className="p-4 max-w-[95%] sm:max-w-[80%] bg-muted">
                     <div className="flex items-center gap-2 mb-2">
                       <Avatar className="h-6 w-6">
                         <AvatarImage src="/ai-avatar.jpeg" />
@@ -347,7 +347,7 @@ const Demopage = () => {
                 <div className="flex flex-col">
                   <textarea
                     ref={textareaRef}
-                    className="text-sm sm:text-lg p-3 w-full focus:outline-none custom-scrollbar resize-none"
+                    className="text-[13px] sm:text-lg p-3 w-full focus:outline-none custom-scrollbar resize-none"
                     placeholder="Type your message..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
@@ -356,7 +356,7 @@ const Demopage = () => {
                     }
                     disabled={isChatLoading}
                     style={{
-                      minHeight: "100px",
+                      minHeight: "40px",
                       maxHeight: "360px",
                       overflowY: "auto",
                     }}
