@@ -7,12 +7,14 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAppStore } from "../_store/useAppStore";
 import { useAuthStore } from "../_store/useAuthStore";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const { authenticated, name, logout, userId } = useAuthStore();
   const { fetchChatOptions, fetchPdfOptions, cacheBuster } = useAppStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     useAuthStore.getState().checkStatus();
@@ -104,7 +106,7 @@ const Navbar = () => {
                     <Button
                       variant="ghost"
                       className="w-full justify-start text-red-600 hover:bg-red-50/50 mt-2"
-                      onClick={logout}
+                      onClick={() => logout(router)}
                     >
                       🚪 Logout
                     </Button>
@@ -185,7 +187,7 @@ const Navbar = () => {
                   </Link>
                   <Button
                     className="w-full mt-4 bg-red-100 text-red-600 hover:bg-red-200 h-12 text-lg"
-                    onClick={logout}
+                    onClick={() => logout(router)}
                   >
                     Logout
                   </Button>

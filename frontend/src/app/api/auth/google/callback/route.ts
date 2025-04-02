@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import jwt from "jsonwebtoken";
-import { db } from "@/lib/firebaseAdmin"; // Import Firestore DB
+import { db } from "@/lib/firebaseAdmin";
 
-const JWT_SECRET = process.env.JWT_SECRET!; // Ensure you have this in your .env file
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 export async function GET(request: NextRequest) {
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;

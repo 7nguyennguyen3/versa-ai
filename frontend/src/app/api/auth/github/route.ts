@@ -9,7 +9,7 @@ export async function GET() {
   const params = new URLSearchParams({
     client_id: GITHUB_CLIENT_ID!,
     redirect_uri: GITHUB_REDIRECT_URI!,
-    scope: "user:email read:user", // Request access to user's email and profile
+    scope: "user:email read:user",
   });
 
   return NextResponse.redirect(`${githubAuthUrl}?${params.toString()}`);

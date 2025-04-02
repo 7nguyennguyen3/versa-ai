@@ -1,33 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { UserDetail } from "@/app/_global/interface";
 import { db } from "@/lib/firebaseAdmin";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-export async function GET(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
+export async function GET(request: NextRequest) {
+  // Try both ways of getting cookies
+  const token =
+    request.cookies.get("token")?.value ||
+    request.headers.get("authorization")?.split(" ")[1];
 
   if (!token) {
-    return NextResponse.json(
-      {
-        authenticated: false,
-        name: null,
-        role: null,
-        tokenExpiresAt: null,
-        plan: null,
-        monthlyUploadUsage: 0,
-        monthlyUploadLimit: 0,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ authenticated: false }, { status: 200 });
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as UserDetail & {
-      exp: number;
-    };
-    const userRef = await db.collection("users").doc(decoded.id).get();
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const userRef = await db
+      .collection("users")
+      .doc(decoded.id.toString())
+      .get();
+
+    if (!userRef.exists) {
+      return NextResponse.json({ authenticated: false }, { status: 200 });
+    }
 
     return NextResponse.json({
       authenticated: true,
@@ -37,21 +33,11 @@ export async function GET(req: NextRequest) {
       role: userRef.data()?.role || "user",
       plan: userRef.data()?.plan || "free",
       monthlyUploadUsage: userRef.data()?.monthlyUploadUsage || 0,
-      monthlyUploadLimit: userRef.data()?.monthlyUploadLimit || 0,
+      monthlyUploadLimit: userRef.data()?.monthlyUploadLimit || 10,
       tokenExpiresAt: new Date(decoded.exp * 1000).toISOString(),
     });
   } catch (error) {
-    return NextResponse.json(
-      {
-        authenticated: false,
-        name: null,
-        role: null,
-        plan: null,
-        monthlyUploadUsage: 0,
-        monthlyUploadLimit: 0,
-        tokenExpiresAt: null,
-      },
-      { status: 400 }
-    );
+    console.error("JWT verification failed:", error);
+    return NextResponse.json({ authenticated: false }, { status: 200 });
   }
 }

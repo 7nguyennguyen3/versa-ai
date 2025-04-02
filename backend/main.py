@@ -13,7 +13,7 @@ log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
     level=log_level,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    force=True  # Override existing configurations
+    force=True,  # Override existing configurations
 )
 
 # Suppress DEBUG logs from third-party libraries
@@ -42,22 +42,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     errors = [
         {
             "error": f"Missing/Invalid Field: {'.'.join(map(str, err['loc']))}",
-            "detail": err["msg"]
+            "detail": err["msg"],
         }
         for err in exc.errors()
     ]
     return JSONResponse(status_code=422, content={"detail": errors})
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
-        app, 
-        host="0.0.0.0", 
+        app,
+        host="0.0.0.0",
         port=int(os.getenv("PORT", 8000)),
-        log_config=None  # Prevent Uvicorn from overriding your config
+        log_config=None,  # Prevent Uvicorn from overriding your config
     )

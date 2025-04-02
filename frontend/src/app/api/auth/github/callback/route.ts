@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import jwt from "jsonwebtoken";
-import { db } from "@/lib/firebaseAdmin"; // Import Firestore DB
+import { db } from "@/lib/firebaseAdmin";
 
-const JWT_SECRET = process.env.JWT_SECRET!; // Ensure you have this in your .env file
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 export async function GET(request: NextRequest) {
   const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID!;
@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
   const code = url.searchParams.get("code");
 
   if (!code) {
+    console.error("Error: No authorization code found");
     return NextResponse.json(
       { error: "Authorization code not found" },
       { status: 400 }
@@ -21,7 +22,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Exchange the authorization code for an access token
     const tokenResponse = await axios.post(
       "https://github.com/login/oauth/access_token",
       null,
@@ -42,14 +42,12 @@ export async function GET(request: NextRequest) {
       throw new Error("Failed to retrieve access token");
     }
 
-    // Fetch user info from GitHub
     const userResponse = await axios.get("https://api.github.com/user", {
       headers: { Authorization: `Bearer ${access_token}` },
     });
 
-    const user = userResponse.data; // { id, name, email, avatar_url, etc. }
+    const user = userResponse.data;
 
-    // Fetch user emails (GitHub requires a separate request for email)
     const emailResponse = await axios.get(
       "https://api.github.com/user/emails",
       {
@@ -61,30 +59,29 @@ export async function GET(request: NextRequest) {
       (email: any) => email.primary
     )?.email;
 
-    // Check if user exists in Firestore
-    const userRef = db.collection("users").doc(user.id.toString());
+    const userId = user.id.toString();
+    const userRef = db.collection("users").doc(userId);
     const doc = await userRef.get();
 
+    const userData = {
+      id: user.id,
+      name: user.name || user.login,
+      email: primaryEmail,
+      avatar: user.avatar_url,
+      role: "user",
+      plan: "free",
+      monthlyUploadUsage: 0,
+      monthlyUploadLimit: 10,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
     if (!doc.exists) {
-      // Save new user
-      await userRef.set({
-        id: user.id,
-        name: user.name || user.login, // Fallback to GitHub username if name is not provided
-        email: primaryEmail,
-        avatar: user.avatar_url,
-        role: "user",
-        plan: "free",
-        monthlyUploadUsage: 0,
-        monthlyUploadLimit: 10,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      await userRef.set(userData);
     } else {
-      // Update user data
       await userRef.update({ updatedAt: new Date() });
     }
 
-    // Generate JWT Token
     const tokenPayload = {
       id: user.id,
       name: user.name || user.login,
@@ -96,7 +93,6 @@ export async function GET(request: NextRequest) {
       expiresIn: "7d",
     });
 
-    // Set JWT in HttpOnly cookie
     const response = NextResponse.redirect(new URL("/dashboard", request.url));
     response.cookies.set({
       name: "token",
@@ -105,12 +101,15 @@ export async function GET(request: NextRequest) {
       secure: true,
       sameSite: "none",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return response;
   } catch (error) {
-    console.error("GitHub OAuth Error:", error);
+    console.error("GitHub OAuth Error:", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
       { error: "Failed to authenticate with GitHub" },
       { status: 500 }

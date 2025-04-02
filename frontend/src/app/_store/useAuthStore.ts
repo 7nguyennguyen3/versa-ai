@@ -7,12 +7,12 @@ interface AuthState {
   name: string | null;
   role: "user" | "admin" | null;
   tokenExpiresAt: string | null;
-  plan: "free" | "pro" | "premium" | "enterprise" | null; // ✅ New field for plan
-  monthlyUploadUsage: number; // ✅ New field for monthly upload usage
-  monthlyUploadLimit: number; // ✅ New field for monthly upload limit
-  logout: () => Promise<void>;
+  plan: "free" | "pro" | "premium" | "enterprise" | null;
+  monthlyUploadUsage: number;
+  monthlyUploadLimit: number;
+  logout: (router?: any) => Promise<void>;
   setAuth: (authData: Partial<AuthState>) => void;
-  checkStatus: () => Promise<void>; // ✅ New function inside the store
+  checkStatus: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -26,19 +26,27 @@ export const useAuthStore = create<AuthState>((set) => ({
   monthlyUploadUsage: 0,
   monthlyUploadLimit: 0,
 
-  logout: async () => {
-    await fetch("/api/auth/signout", { method: "POST" });
-    set({
-      authenticated: false,
-      userId: null,
-      email: null,
-      name: null,
-      role: null,
-      tokenExpiresAt: null,
-      plan: null,
-      monthlyUploadUsage: 0,
-      monthlyUploadLimit: 0,
-    });
+  logout: async (router) => {
+    try {
+      await fetch("/api/auth/signout", { method: "POST" });
+      set({
+        authenticated: false,
+        userId: null,
+        email: null,
+        name: null,
+        role: null,
+        tokenExpiresAt: null,
+        plan: null,
+        monthlyUploadUsage: 0,
+        monthlyUploadLimit: 0,
+      });
+
+      if (router) {
+        router.push("/");
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   },
 
   setAuth: (authData) => set(authData),

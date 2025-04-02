@@ -6,7 +6,6 @@ const DEBUG = false;
 
 export async function middleware(req: NextRequest) {
   if (DEBUG) {
-    console.log("Middleware is running");
     return NextResponse.json(
       { message: "Middleware is working" },
       { status: 200 }
