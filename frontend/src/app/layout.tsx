@@ -1,10 +1,10 @@
 import { Toaster } from "@/components/ui/sonner";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Geist, Recursive } from "next/font/google";
-import Footer from "./_components/Footer";
 import Navbar from "./_components/Navbar";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
+import { LayoutProvider } from "./LayoutProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,21 +24,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-  pathname,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-  pathname: string;
-}>) {
+}) {
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${recursive.variable} antialiased`}
       >
         <Navbar />
-        {children}
+        <LayoutProvider>{children}</LayoutProvider>
         <Toaster richColors />
         <SpeedInsights />
-        <Footer />
       </body>
     </html>
   );

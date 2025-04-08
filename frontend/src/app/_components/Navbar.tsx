@@ -46,14 +46,17 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 backdrop-blur-lg border-b border-gray-200 z-50 sticky top-0">
-      <div className="container mx-auto flex justify-between items-center px-4 sm:px-6 py-3">
+    <header
+      className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 
+    backdrop-blur-lg border-b border-gray-200 z-50 fixed top-0"
+    >
+      <div className="mx-auto flex justify-between items-center px-4 sm:px-6 py-3">
         <Link
           href="/"
           className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-colors"
         >
           <Bot className="w-8 h-8" />
-          <span className="text-xl font-semibold tracking-tight">Versa AI</span>
+          <span className="text-xl font-semibold">Versa AI</span>
         </Link>
 
         {/* Desktop Navigation */}

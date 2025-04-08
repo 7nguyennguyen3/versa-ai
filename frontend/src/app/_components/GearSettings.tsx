@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Lock, PlusCircleIcon, Settings } from "lucide-react";
-import React from "react";
+import React, { ReactNode } from "react";
 import { v4 as uuivd4 } from "uuid";
 import { ChatSession } from "../_global/interface";
 import { MODEL_OPTIONS, RETRIEVAL_OPTIONS } from "../_global/variables";
@@ -19,9 +19,10 @@ import { useAppStore } from "../_store/useAppStore";
 
 interface GearSettingsProps {
   userId: string | null;
+  component?: ReactNode;
 }
 
-const GearSettings: React.FC<GearSettingsProps> = ({ userId }) => {
+const GearSettings: React.FC<GearSettingsProps> = ({ userId, component }) => {
   const {
     selectedPdf,
     selectedChat,
@@ -225,6 +226,7 @@ const GearSettings: React.FC<GearSettingsProps> = ({ userId }) => {
         onClick={handleNewChat}
         className="hover:text-blue-400 hover:scale-110 hover:cursor-pointer"
       />
+      {component}
     </div>
   );
 };
