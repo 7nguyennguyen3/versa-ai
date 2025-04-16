@@ -1,58 +1,116 @@
 "use client";
+
+import React from "react"; // Removed useState, FormEvent
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { AlertTriangle } from "lucide-react";
+// Removed Input import
+import { SearchX, Home, ArrowLeft } from "lucide-react"; // Removed Search icon
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const NotFoundPage = () => {
   const router = useRouter();
+  // Removed searchQuery state and handleSearch function
+
+  // Animation variants (remain the same)
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.15, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-gray-100 flex flex-col items-center justify-center px-6 py-12">
-      <Card className="shadow-2xl border-blue-200 bg-white max-w-2xl w-full p-8 transform transition-all hover:shadow-xl">
-        <div className="flex flex-col items-center text-center space-y-6">
-          <div className="bg-red-100 p-4 rounded-full animate-pulse">
-            <AlertTriangle className="h-12 w-12 text-red-600" />
-          </div>
+    // Use simpler background, center content vertically and horizontally
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-blue-100 flex flex-col items-center justify-center text-center px-4 py-16">
+      <motion.div
+        className="max-w-lg w-full" // Controls content width
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* Icon */}
+        <motion.div variants={itemVariants}>
+          <SearchX
+            className="h-20 w-20 md:h-24 md:w-24 mx-auto text-indigo-300 mb-6"
+            strokeWidth={1.5}
+          />
+        </motion.div>
 
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-red-600 to-purple-600 bg-clip-text text-transparent">
-            Page Not Found
-          </h1>
+        {/* 404 Indicator */}
+        <motion.p
+          variants={itemVariants}
+          className="text-base font-semibold text-indigo-600 uppercase tracking-wide mb-2"
+        >
+          404 Error
+        </motion.p>
 
-          <p className="text-gray-600 text-lg leading-relaxed max-w-2xl">
-            {
-              "The page you're looking for seems to have vanished into the digital void. Don't worry - our AI assistants are on the case! 🕵️♂️"
-            }
-          </p>
+        {/* Main Heading */}
+        <motion.h1
+          variants={itemVariants}
+          className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4"
+        >
+          Page Not Found
+        </motion.h1>
 
-          <div className="flex flex-col sm:flex-row gap-4 mt-6">
-            <Button
-              onClick={() => router.push("/")}
-              className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-4 rounded-lg text-lg shadow-md transition-all duration-300 hover:scale-105"
-            >
-              🏠 Return Home
-            </Button>
+        {/* Helper Text */}
+        <motion.p
+          variants={itemVariants}
+          className="text-lg text-gray-600 mb-10" // Increased margin-bottom slightly after removing search
+        >
+          Sorry, we couldn&apos;t find the page you were looking for. It might
+          have been moved, deleted, or maybe the URL was mistyped.
+        </motion.p>
 
-            <Button
-              variant="outline"
-              onClick={() => router.back()}
-              className="border-blue-500 text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-lg text-lg transition-all duration-300 hover:scale-105"
-            >
-              ↩ Go Back
-            </Button>
-          </div>
+        {/* Removed Search Bar Form */}
 
-          <p className="text-gray-500 text-sm mt-8">
-            Error Code: 404 | Still lost?{" "}
-            <a
-              href="mailto:support@versapdf.com"
-              className="text-blue-600 hover:underline"
-            >
-              Contact Support
-            </a>
-          </p>
-        </div>
-      </Card>
+        {/* Action Buttons */}
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col sm:flex-row gap-4 justify-center"
+        >
+          <Button
+            size="lg"
+            onClick={() => router.push("/")}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 text-base font-semibold rounded-md shadow-sm transition-all"
+          >
+            <Home className="mr-2 h-4 w-4" /> Return Home
+          </Button>
+
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={() => router.back()}
+            className="border-gray-400 text-gray-700 hover:bg-gray-100 px-6 py-3 text-base font-semibold rounded-md shadow-sm transition-all"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
+          </Button>
+        </motion.div>
+
+        {/* Contact Link */}
+        <motion.p
+          variants={itemVariants}
+          className="text-gray-500 text-sm mt-12"
+        >
+          Still having trouble?{" "}
+          <Link
+            href="/contact" // Link to a contact page
+            className="text-indigo-600 hover:text-indigo-800 hover:underline font-medium"
+          >
+            Contact Support
+          </Link>
+        </motion.p>
+      </motion.div>
     </div>
   );
 };

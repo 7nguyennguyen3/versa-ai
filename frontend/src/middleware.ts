@@ -29,14 +29,14 @@ export async function middleware(req: NextRequest) {
 
   if (protectedRoutes.some((route) => requestedPath.startsWith(route))) {
     if (!token || token.trim() === "") {
-      return NextResponse.redirect(new URL("please-login", req.url)); // Redirect to login page
+      return NextResponse.redirect(new URL("unauthorized", req.url)); // Redirect to login page
     }
 
     try {
       await jwtVerify(token, JWT_SECRET);
       return NextResponse.next(); // Allow access
     } catch (error) {
-      return NextResponse.redirect(new URL("please-login", req.url)); // Redirect if token is invalid
+      return NextResponse.redirect(new URL("unauthorized", req.url)); // Redirect if token is invalid
     }
   }
 

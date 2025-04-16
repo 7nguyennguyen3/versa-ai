@@ -1,82 +1,119 @@
 "use client";
-import { useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { useAuthStore } from "../_store/useAuthStore";
-import { useAppStore } from "../_store/useAppStore";
-import { ChatSession } from "../_global/interface";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { FileText, Map, MessagesSquare, Upload } from "lucide-react";
 import Link from "next/link";
 
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15, delayChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
+
 const ChatPage = () => {
-  const { userId } = useAuthStore();
-  const { currentChatId, addNewChatSession, setCurrentChat } = useAppStore();
+  // const { userId } = useAuthStore(); // Keep if needed for personalization
 
-  useEffect(() => {
-    if (!currentChatId) {
-      const timeout = setTimeout(() => {
-        const generatedChatSessionId = uuidv4();
-        const newSession: ChatSession = {
-          title: "New Chat",
-          chat_session_id: generatedChatSessionId,
-          chat_history: [],
-          last_activity: new Date(),
-          latest_pdfId: "",
-          userId: userId ?? "ZZhGEGRnjX2uZeGaCYpv",
-        };
-
-        addNewChatSession(newSession.userId!, generatedChatSessionId);
-        setCurrentChat(newSession);
-      }, 2000);
-      return () => clearTimeout(timeout);
-    }
-  }, [currentChatId, setCurrentChat, addNewChatSession, userId]);
+  // Removed useEffect logic
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 to-purple-200 p-4">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold text-center text-gray-900">
-            🚀 Coming Soon! 🎉
-          </CardTitle>
-          <CardDescription className="text-center text-gray-600 mt-2">
-            This page is currently in development. Stay tuned for something
-            amazing! ✨
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-center text-gray-700">
-            <p>In the meantime, check out these pages:</p>
-          </div>
-          <div className="flex flex-col space-y-2">
+    // Cleaner background, full page centering
+    <div className="min-h-screen w-full bg-slate-50 flex flex-col items-center justify-center text-center px-4 py-16">
+      <motion.div
+        className="max-w-xl w-full" // Control content width
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* Icon */}
+        <motion.div variants={itemVariants}>
+          {/* Choose an icon: Construction, Wrench, MessagesSquare etc. */}
+          <MessagesSquare
+            className="h-20 w-20 md:h-24 md:w-24 mx-auto text-indigo-300 mb-8"
+            strokeWidth={1.5}
+          />
+        </motion.div>
+
+        {/* Badge (Optional) */}
+        <motion.div variants={itemVariants} className="mb-3">
+          <span className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-0.5 text-sm font-medium text-indigo-800">
+            Coming Soon
+          </span>
+        </motion.div>
+
+        {/* Main Heading */}
+        <motion.h1
+          variants={itemVariants}
+          className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight mb-4"
+        >
+          Our New Chat Interface is Under Development
+        </motion.h1>
+
+        {/* Helper Text */}
+        <motion.p
+          variants={itemVariants}
+          className="text-lg text-gray-600 mb-10"
+        >
+          We&apos;re building an amazing new way for you to interact with your
+          documents. Stay tuned for updates! ✨
+        </motion.p>
+
+        {/* Action Links/Buttons */}
+        <motion.div
+          variants={itemVariants}
+          className="space-y-3 sm:space-y-0 sm:flex sm:flex-row sm:gap-4 sm:justify-center" // Layout links
+        >
+          {/* Styled Buttons using consistent variants */}
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="w-full sm:w-auto border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+          >
             <Link href="/pdf-chat">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition duration-300">
-                📄 Go to PDF Chat
-              </Button>
+              <FileText className="mr-2 h-4 w-4" /> Go to PDF Chat
             </Link>
-            <Link href="/roadmap">
-              <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition duration-300">
-                🗺️ View Roadmap
-              </Button>
-            </Link>
+          </Button>
+
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-100"
+          >
             <Link href="/upload-pdf">
-              <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded-lg transition duration-300">
-                📤 Upload PDF
-              </Button>
+              <Upload className="mr-2 h-4 w-4" /> Upload New PDF
             </Link>
-          </div>
-        </CardContent>
-        <CardFooter className="text-center text-gray-500 text-sm">
-          <p>{"We're working hard to bring you the best experience! 💪"}</p>
-        </CardFooter>
-      </Card>
+          </Button>
+
+          <Button
+            asChild
+            size="lg"
+            variant="ghost"
+            className="w-full sm:w-auto text-gray-600 hover:bg-gray-100"
+          >
+            <Link href="/roadmap">
+              <Map className="mr-2 h-4 w-4" /> View Roadmap
+            </Link>
+          </Button>
+        </motion.div>
+
+        {/* Footer Text */}
+        <motion.p
+          variants={itemVariants}
+          className="text-gray-500 text-sm mt-12"
+        >
+          We appreciate your patience while we build! 💪
+        </motion.p>
+      </motion.div>
     </div>
   );
 };

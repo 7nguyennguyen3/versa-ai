@@ -12,6 +12,7 @@ __pycache__/
 # Frontend-specific ignores
 frontend/node_modules/
 frontend/.next/
+frontend/development
 frontend/.env
 frontend/.vercel/  # If you're deploying on Vercel
 frontend/.cache/  # Temporary build caches

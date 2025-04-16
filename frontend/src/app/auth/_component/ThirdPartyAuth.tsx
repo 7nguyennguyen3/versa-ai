@@ -104,11 +104,6 @@ const GitHubSignInButton = () => {
 const ThirdPartyAuth = ({ signup }: { signup: boolean }) => {
   return (
     <>
-      <div className="flex items-center my-4">
-        <hr className="flex-grow border-gray-300" />
-        <span className="px-2 text-gray-500">or</span>
-        <hr className="flex-grow border-gray-300" />
-      </div>
       <SignUpButton signup={signup} />
       <GitHubSignInButton />
       <GoogleSignInButton />

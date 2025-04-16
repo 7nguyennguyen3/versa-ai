@@ -26,6 +26,8 @@ class MessageRequest(BaseModel):
     pdf_id: str
     userId: str
     isNewSession: Optional[bool] = False
+    model: Optional[str] = None
+    retrievalMethod: Optional[str] = "auto"
 
 
 class PDFIngestRequest(BaseModel):
@@ -80,6 +82,7 @@ async def chat_send(
     pdf_id = message_request.pdf_id
     chat_session_id = message_request.chat_session_id
     user_id = message_request.userId
+    model = message_request.model
     isNewSession = message_request.isNewSession
 
     logging.info(
@@ -112,7 +115,6 @@ async def chat_send(
                 content={"error": "Redis is unavailable"},
             )
 
-        # Get chat history and process message
         session_manager = request.app.state.session_manager_firebase
         chat_history = await session_manager.get_history(chat_session_id)
 
@@ -132,7 +134,7 @@ async def chat_send(
         recent_history.reverse()
 
         # Create processing chain
-        retrieval_chain = create_chain(recent_history, user_id, pdf_id)
+        retrieval_chain = create_chain(recent_history, user_id, pdf_id, model)
 
         # Store user message first
         await session_manager.add_message(

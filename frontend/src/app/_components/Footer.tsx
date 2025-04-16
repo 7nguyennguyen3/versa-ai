@@ -8,95 +8,173 @@ import {
   FaGithub,
 } from "react-icons/fa6";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
+// Import your Logo component or use an img tag
+// import Logo from './Logo';
+
+// Define social links data (replace '#' with actual URLs)
+const socialLinks = [
+  { name: "Facebook", href: "#", icon: FaFacebookF },
+  { name: "X (Twitter)", href: "#", icon: FaXTwitter },
+  { name: "LinkedIn", href: "#", icon: FaLinkedinIn },
+  { name: "GitHub", href: "#", icon: FaGithub },
+];
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white py-12 px-6">
-      <div className="grid md:grid-cols-3 gap-8 text-center md:text-left">
-        {/* Company Info */}
-        <Card className="bg-transparent border-none shadow-none">
-          <CardContent>
-            <h2 className="text-xl font-bold mb-3 text-white">
-              🚀 Our AI Platform
+    // Use a slightly lighter dark color for better contrast potentially
+    <footer className="bg-slate-900 text-slate-300 pt-16 pb-8 px-6 md:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Main Footer Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-8 mb-10">
+          {/* Column 1: Company Info & Logo */}
+          <div className="md:col-span-2 lg:col-span-1">
+            {/* Replace with your actual Logo component or img tag */}
+            {/* <Logo className="h-8 w-auto text-white mb-4" /> */}
+            <h2 className="text-lg font-semibold text-white mb-3">
+              Your AI Platform {/* Or your actual platform name */}
             </h2>
-            <p className="text-gray-400 text-sm">
-              Transforming the way you interact with AI. From PDF insights to
-              customizable AI assistants, we’ve got you covered.
+            <p className="text-sm text-slate-400 leading-relaxed">
+              Transforming the way you interact with documents using AI. From
+              PDF insights to customizable assistants.
             </p>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Quick Links */}
-        <Card className="bg-transparent border-none shadow-none">
-          <CardContent>
-            <h3 className="text-lg font-semibold mb-3 text-white">
-              Quick Links
+          {/* Column 2: Quick Links (Product/Features) */}
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
+              Product
             </h3>
-            <ul className="space-y-2 text-gray-300">
+            <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/about" className="hover:text-blue-400">
-                  📖 About Us
+                <Link
+                  href="/features"
+                  className="hover:text-white hover:underline transition-colors"
+                >
+                  Features
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="hover:text-blue-400">
-                  💰 Pricing
+                <Link
+                  href="/pdf-chat"
+                  className="hover:text-white hover:underline transition-colors"
+                >
+                  PDF Chat
                 </Link>
               </li>
               <li>
-                <Link href="/terms-and-privacy" className="hover:text-blue-400">
-                  ⚖️ Terms & Privacy
+                <Link
+                  href="/integrations"
+                  className="hover:text-white hover:underline transition-colors"
+                >
+                  Integrations
                 </Link>
               </li>
               <li>
-                <Link href="/support" className="hover:text-blue-400">
-                  🛠 Support
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-blue-400">
-                  📩 Contact Us
+                <Link
+                  href="/pricing"
+                  className="hover:text-white hover:underline transition-colors"
+                >
+                  Pricing
                 </Link>
               </li>
             </ul>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Social Media Links */}
-        <Card className="bg-transparent border-none shadow-none">
-          <CardContent className="flex flex-col items-center md:items-start">
-            <h3 className="text-lg font-semibold mb-3 text-white">Follow Us</h3>
-            <div className="flex space-x-4">
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FaFacebookF className="text-gray-300 hover:text-blue-500 w-6 h-6" />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FaXTwitter className="text-gray-300 hover:text-blue-400 w-6 h-6" />
-              </a>
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FaGithub className="text-gray-300 hover:text-gray-500 w-6 h-6" />
-              </a>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          {/* Column 3: Quick Links (Company/Resources) */}
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
+              Company
+            </h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link
+                  href="/about"
+                  className="hover:text-white hover:underline transition-colors"
+                >
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/blog"
+                  className="hover:text-white hover:underline transition-colors"
+                >
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/contact"
+                  className="hover:text-white hover:underline transition-colors"
+                >
+                  Contact Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/support"
+                  className="hover:text-white hover:underline transition-colors"
+                >
+                  Support
+                </Link>
+              </li>
+            </ul>
+          </div>
 
-      {/* Copyright */}
-      <div className="mt-8 text-gray-500 text-center text-sm">
-        © {new Date().getFullYear()} Our AI Platform. All Rights Reserved.
+          {/* Column 4: Legal */}
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
+              Legal
+            </h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link
+                  href="/privacy-policy"
+                  className="hover:text-white hover:underline transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms-of-service"
+                  className="hover:text-white hover:underline transition-colors"
+                >
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/cookie-policy"
+                  className="hover:text-white hover:underline transition-colors"
+                >
+                  Cookie Policy
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom Bar: Copyright & Social Links */}
+        <div className="mt-12 pt-8 border-t border-slate-700/50 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-xs text-slate-500 text-center md:text-left">
+            &copy; 2025 Versa AI, Inc. All Rights Reserved.
+          </p>
+          <div className="flex space-x-5">
+            {socialLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={link.name} // Accessibility improvement
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <link.icon className="w-5 h-5" /> {/* Consistent size */}
+              </a>
+            ))}
+          </div>
+        </div>
       </div>
     </footer>
   );

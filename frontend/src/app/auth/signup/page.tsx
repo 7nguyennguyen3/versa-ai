@@ -1,100 +1,221 @@
 "use client";
 
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, FormEvent } from "react";
+import axios, { AxiosError } from "axios";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/app/_store/useAuthStore";
-import { ThirdPartyAuth } from "@/app/_components/ThirdPartyAuth";
+import { useAuthStore } from "@/app/_store/useAuthStore"; // Adjust path
+import { ThirdPartyAuth } from "@/app/auth/_component/ThirdPartyAuth"; // Adjust path
+import { Eye, EyeOff, Loader2, UserPlus } from "lucide-react"; // Added icons
+import Link from "next/link";
+import { motion } from "framer-motion";
+// import YourLogo from "@/components/YourLogo"; // Import your logo component
 
 const SignUpPage = () => {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { checkStatus } = useAuthStore();
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: FormEvent<HTMLFormElement>) => {
+    // Typed event
     e.preventDefault();
+    // Basic password validation (example)
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      return;
+    }
     setLoading(true);
     setError("");
 
     try {
       const response = await axios.post("/api/auth/signup", {
+        // Adjust API path
         name,
         email,
         password,
       });
 
       if (response.status === 201) {
-        await checkStatus();
-        router.push("/"); // Redirect on success
+        await checkStatus(); // Refresh auth state
+        router.push("/dashboard"); // Redirect on success - Adjust path
+      } else {
+        setError(
+          response.data?.message || "Signup failed: Unexpected status code."
+        );
       }
     } catch (err) {
-      setError(err.response?.data?.error || "Signup failed");
+      console.error("Sign up error:", err);
+      let message = "Signup failed. Please try again.";
+      if (axios.isAxiosError(err)) {
+        message = err.response?.data?.error || err.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col min-h-screen items-center justify-center bg-gray-100 p-4">
-      <Card className="w-full max-w-sm shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-xl">Sign Up</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSignUp} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Enter your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
+    <div className="flex flex-col min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-100 p-4">
+      <motion.div
+        initial={{ opacity: 0, y: -20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="w-full max-w-md" // Slightly wider card
+      >
+        <Card className="w-full shadow-xl border-gray-200/80">
+          <CardHeader className="text-center p-6">
+            {/* <YourLogo className="h-10 w-auto mx-auto mb-4" /> */}{" "}
+            {/* Add your logo here */}
+            <CardTitle className="text-2xl font-bold tracking-tight">
+              Create an Account
+            </CardTitle>
+            <CardDescription>
+              Join us! Enter your details below.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6 pt-0">
+            <form onSubmit={handleSignUp} className="space-y-4">
+              {/* Name Input */}
+              <div className="space-y-1.5">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  autoComplete="name"
+                  placeholder="Your Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
 
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
+              {/* Email Input */}
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
 
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
+              {/* Password Input */}
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    placeholder="Create a password (min. 8 chars)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-gray-500 hover:text-gray-700"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                {/* Simple password requirement hint */}
+                {password && password.length < 8 && (
+                  <p className="text-xs text-red-500">
+                    Password must be at least 8 characters.
+                  </p>
+                )}
+              </div>
 
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+              {/* Error Display */}
+              {error && (
+                <p className="text-red-600 text-sm font-medium flex items-center">
+                  <UserPlus className="w-4 h-4 mr-1.5" />
+                  {error}
+                </p>
+              )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing up..." : "Sign Up"}
-            </Button>
-            <ThirdPartyAuth signup={false} />
-          </form>
-        </CardContent>
-      </Card>
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                className="w-full text-base py-3"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing
+                    Up...
+                  </>
+                ) : (
+                  "Create Account"
+                )}
+              </Button>
+
+              {/* Divider */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-300"></span>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-gray-500">
+                    Or sign up with
+                  </span>
+                </div>
+              </div>
+
+              {/* Third-Party Auth Buttons */}
+              {/* Assuming 'true' means Sign Up mode for your component */}
+              <ThirdPartyAuth signup={true} />
+            </form>
+            {/* Link to Sign In */}
+            <p className="mt-6 text-center text-sm text-gray-600">
+              Already have an account?{" "}
+              <Link
+                href="/auth/signin"
+                className="font-medium text-blue-600 hover:underline"
+              >
+                Sign In
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 };

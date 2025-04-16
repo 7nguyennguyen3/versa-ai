@@ -1,4 +1,11 @@
-import { PDFDocument } from "./interface";
+import {
+  BrainCircuit,
+  Megaphone,
+  ShieldCheck,
+  TerminalSquare,
+  Zap,
+} from "lucide-react";
+import { BlogPost, PDFDocument, PricingTier } from "./interface";
 
 export interface RoadmapProps {
   devName: string;
@@ -9,6 +16,59 @@ export interface RoadmapProps {
   comments?: string;
   priority: "Low" | "Medium" | "High";
 }
+
+export const sampleBlogPosts: BlogPost[] = [
+  {
+    slug: "unlock-pdfs-conversational-ai",
+    title: "Unlock Your PDFs: Introducing Conversational AI for Documents",
+    excerpt:
+      "Tired of searching through endless pages? Discover how Versa AI's chat feature lets you talk directly to your PDFs and get instant answers, summaries, and insights. Revolutionize your workflow.",
+    icon: Megaphone,
+    date: "April 10, 2025",
+    category: "Product Updates",
+    author: "The Versa AI Team",
+  },
+  {
+    slug: "ai-document-analysis-productivity",
+    title: "5 Ways AI Document Analysis Boosts Team Productivity",
+    excerpt:
+      "Learn how leveraging AI to summarize reports, extract data, and answer questions can save your team hours each week, freeing up time for more strategic work.",
+    icon: Zap,
+    date: "April 3, 2025",
+    category: "Productivity Tips",
+    author: "Jane Doe",
+  },
+  {
+    slug: "understanding-llms-documents",
+    title: "Understanding Large Language Models (LLMs) and Your Documents",
+    excerpt:
+      "A non-technical explanation of how LLMs like the ones powering Versa AI work to understand context and generate human-like insights from your text data.",
+    icon: BrainCircuit,
+    date: "March 28, 2025",
+    category: "AI Explained",
+    author: "The Versa AI Team",
+  },
+  {
+    slug: "versa-ai-security-privacy",
+    title: "Data Security and Privacy in Versa AI: Our Commitment",
+    excerpt:
+      "Your trust is paramount. Learn about the security measures like encryption and access controls, plus our privacy principles built into the Versa AI platform.",
+    icon: ShieldCheck,
+    date: "March 20, 2025",
+    category: "Security",
+    author: "Security Team",
+  },
+  {
+    slug: "semantic-search-pdfs",
+    title: "Beyond Keywords: The Power of Semantic Search in PDFs",
+    excerpt:
+      "Why simple keyword searches often fail with complex documents and how semantic understanding changes the game for finding relevant information.",
+    icon: TerminalSquare,
+    date: "March 15, 2025",
+    category: "Technology",
+    author: "John Smith",
+  },
+];
 
 export const APP_ROADMAP: RoadmapProps[] = [
   {
@@ -114,7 +174,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
   },
   {
     devName: "Enhanced Data Parsing/Display for Chat",
-    status: "In Progress",
+    status: "Completed",
     description: "Improve data parsing and display in the chat interface.",
     startDate: new Date("3/08/2025"),
     endDate: new Date(),
@@ -141,40 +201,31 @@ export const APP_ROADMAP: RoadmapProps[] = [
     comments: "Used cron-job.org",
     priority: "Medium",
   },
-  {
-    devName: "Optimize Uploaded PDF",
-    status: "Not Started",
-    description:
-      "Have an option for user to optimize their uploaded PDFs before upserting to save bytes.",
-    startDate: new Date(),
-    endDate: new Date(),
-    comments: "",
-    priority: "Medium",
-  },
+
   {
     devName: "Dashboard & Settings Page",
-    status: "In Progress",
+    status: "Completed",
     description:
       "Update the dashboard and setting page to include functionality.",
-    startDate: new Date(),
-    endDate: new Date(),
+    startDate: new Date("04/04/2025"),
+    endDate: new Date("04/14/2025"),
     comments: "",
     priority: "Medium",
   },
   {
     devName: "Cookies Auth for SSE Route",
-    status: "Not Started",
+    status: "In Progress",
     description: "Use cookies for SSE route authentication.",
-    startDate: new Date(),
+    startDate: new Date("04/14/2025"),
     endDate: new Date(),
     comments: "",
     priority: "High",
   },
   {
     devName: "CSRF Protection",
-    status: "Not Started",
+    status: "In Progress",
     description: "Add CSRF protection to secure the application.",
-    startDate: new Date(),
+    startDate: new Date("04/14/2025"),
     endDate: new Date(),
     comments: "",
     priority: "High",
@@ -189,12 +240,11 @@ export const APP_ROADMAP: RoadmapProps[] = [
     priority: "Medium",
   },
   {
-    devName: "Object Generation Streaming",
-    status: "Skipped",
+    devName: "Improve Streaming and Handling",
+    status: "Completed",
     description: "Upgrade the current approach of streaming text only.",
-    startDate: new Date(),
-    endDate: new Date(),
-    comments: "Not Necessary --> Used React Markdown for now",
+    startDate: new Date("03/25/2025"),
+    endDate: new Date("04/14/2025"),
     priority: "Medium",
   },
   {
@@ -216,9 +266,9 @@ export const APP_ROADMAP: RoadmapProps[] = [
     priority: "Low",
   },
   {
-    devName: "Implement Custom Memory",
+    devName: "Implement Custom Personalities",
     status: "Not Started",
-    description: "Add custom memory implementation for chat sessions.",
+    description: "User choose how chatbot will respond, their tone, and more.",
     startDate: new Date(),
     endDate: new Date(),
     comments: "",
@@ -234,13 +284,124 @@ export const APP_ROADMAP: RoadmapProps[] = [
     priority: "Low",
   },
   {
-    devName: "Reverse Proxy",
-    status: "Skipped",
-    description: "Set up a reverse proxy for the application.",
-    startDate: new Date(),
+    devName: "Improve Logic to Answer User Queries Better",
+    status: "In Progress",
+    description: "Consder moving to Langgraph in addition to using Langchain.",
+    startDate: new Date("04/15/2025"),
     endDate: new Date(),
     comments: "Not Needed",
     priority: "Medium",
+  },
+  {
+    devName: "Chatbot responding with citations and page numbers from PDF",
+    status: "In Progress",
+    description:
+      "Agent replies with citations and page numbers from PDF for credibility",
+    startDate: new Date("04/15/2025"),
+    endDate: new Date(),
+    comments: "Not Needed",
+    priority: "Medium",
+  },
+  {
+    devName: "Advanced Customization",
+    status: "In Progress",
+    description: "Allows more models and customization options.",
+    startDate: new Date("04/15/2025"),
+    endDate: new Date(),
+    comments: "Not Needed",
+    priority: "Medium",
+  },
+  {
+    devName: "Optimize Uploaded PDF",
+    status: "Not Started",
+    description:
+      "Have an option for user to optimize their uploaded PDFs before upserting to save bytes.",
+    startDate: new Date(),
+    endDate: new Date(),
+    comments: "",
+    priority: "Medium",
+  },
+];
+
+export const pricingTiers: PricingTier[] = [
+  {
+    name: "Starter",
+    price: "$0",
+    frequency: "/ month",
+    description: "For individuals getting started with AI document analysis.",
+    cta: "Sign Up Free",
+    href: "/auth/signup?plan=free", // Example link
+    features: [
+      { text: "15 Documents / month", included: true },
+      { text: "50MB Upload Limit / file", included: true },
+      { text: "Standard AI Model", included: true },
+      { text: "Basic Chat History (7 days)", included: true },
+      { text: "Multi-Document Chat (Max 2 docs)", included: false },
+      { text: "OCR for Scanned Docs (Limited)", included: false },
+      { text: "API Access", included: false },
+      { text: "Standard Email Support", included: true },
+    ],
+    highlight: false,
+    themeColorClass: "border-gray-300",
+  },
+  {
+    name: "Pro",
+    price: "$20",
+    frequency: "/ month",
+    description: "For professionals & small teams needing more power.",
+    cta: "Get Started with Pro",
+    href: "/auth/signup?plan=pro", // Example link
+    features: [
+      { text: "150 Documents / month", included: true },
+      { text: "250MB Upload Limit / file", included: true },
+      { text: "Advanced AI Model", included: true },
+      { text: "Extended Chat History (90 days)", included: true },
+      { text: "Multi-Document Chat (Max 5 docs)", included: true },
+      { text: "OCR for Scanned Docs", included: true },
+      { text: "API Access (Standard)", included: true },
+      { text: "Priority Email Support", included: true },
+    ],
+    highlight: true, // Highlight this tier
+    themeColorClass: "border-blue-500", // Blue theme for highlight border
+  },
+  {
+    name: "Premium",
+    price: "$45",
+    frequency: "/ month",
+    description: "For heavy users & growing teams requiring advanced features.",
+    cta: "Go Premium",
+    href: "/auth/signup?plan=premium", // Example link
+    features: [
+      { text: "Unlimited Documents / month", included: true },
+      { text: "1GB Upload Limit / file", included: true },
+      { text: "Premium AI Model (Latest)", included: true },
+      { text: "Unlimited Chat History", included: true },
+      { text: "Multi-Document Chat (Max 10 docs)", included: true },
+      { text: "Advanced OCR & Data Extraction", included: true },
+      { text: "API Access + Batch Processing", included: true },
+      { text: "Priority Chat & Email Support", included: true },
+    ],
+    highlight: false,
+    themeColorClass: "border-purple-500", // Example subtle theme border
+  },
+  {
+    name: "Enterprise",
+    price: "Custom",
+    frequency: "",
+    description:
+      "Tailored solutions & dedicated support for large organizations.",
+    cta: "Contact Sales",
+    href: "/contact-sales", // Example link
+    features: [
+      { text: "Volume Usage & Custom Limits", included: true },
+      { text: "Custom/Fine-Tuned AI Models", included: true },
+      { text: "Dedicated Infrastructure Options", included: true },
+      { text: "SSO & Advanced Security Audits", included: true },
+      { text: "Dedicated API with SLA", included: true },
+      { text: "Onboarding & Dedicated Support", included: true },
+    ],
+    highlight: false,
+    themeColorClass: "border-gray-500", // Neutral/darker theme
   },
 ];
 
@@ -253,6 +414,11 @@ export const PLAN_LIMITS = {
 
 export const MODEL_OPTIONS = [
   {
+    name: "Gemini-2.0",
+    value: "gemini-2.0",
+    disabled: false,
+  },
+  {
     name: "GPT-4o-Mini",
     value: "gpt-4o-mini",
     disabled: false,
@@ -263,13 +429,13 @@ export const MODEL_OPTIONS = [
     disabled: true,
   },
   {
-    name: "GPT-3.5",
-    value: "gpt-3.5",
+    name: "Deepseek V3",
+    value: "custom-model",
     disabled: true,
   },
   {
-    name: "Custom Model (Coming Soon)",
-    value: "custom-model",
+    name: "Claude 3.7 Sonnet",
+    value: "claude-3.7-sonnet",
     disabled: true,
   },
 ];

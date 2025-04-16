@@ -35,6 +35,7 @@ interface AppStoreState {
   // Selection Actions
   setCurrentPdf: (pdf: PDFDocument | null) => void;
   setCurrentChat: (chat: ChatSession | null) => void;
+  markSessionAsNotNew: (sessionId: string) => void;
   setModel: (model: string) => void;
   setRetrievalMethod: (method: string) => void;
 
@@ -57,7 +58,7 @@ export const useAppStore = create<AppStoreState>((set) => ({
   currentChatId: null,
   selectedPdf: null,
   selectedChat: null,
-  selectedModel: "gpt-4o-mini",
+  selectedModel: "gemini-2.0",
   selectedRetrievalMethod: "similarity-search",
   pdfOptions: [],
   chatOptions: [],
@@ -104,6 +105,37 @@ export const useAppStore = create<AppStoreState>((set) => ({
       selectedChat: chat,
       currentChatId: chat?.chat_session_id || null,
       currentPdfId: chat?.latest_pdfId || null,
+    }),
+  markSessionAsNotNew: (sessionId) =>
+    set((state) => {
+      let updatedSelectedChat = state.selectedChat;
+
+      // Update selectedChat if it's the one being marked
+      // Check if selectedChat exists and matches the sessionId before updating
+      if (
+        state.selectedChat &&
+        state.selectedChat.chat_session_id === sessionId
+      ) {
+        // Create a new object with the updated flag
+        updatedSelectedChat = {
+          ...state.selectedChat,
+          isNewSession: false, // Set the flag to false
+        };
+      }
+
+      // ALSO update the chat in the chatOptions list for consistency
+      // Otherwise, if the user selects it again later, it might still think it's new
+      const updatedChatOptions = state.chatOptions.map((chat) =>
+        chat.chat_session_id === sessionId
+          ? { ...chat, isNewSession: false } // Update the flag here too
+          : chat
+      );
+
+      // Return the updated state
+      return {
+        selectedChat: updatedSelectedChat,
+        chatOptions: updatedChatOptions,
+      };
     }),
 
   setModel: (model) => set({ selectedModel: model }),

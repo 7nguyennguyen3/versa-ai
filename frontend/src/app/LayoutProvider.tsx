@@ -5,7 +5,9 @@ import Footer from "./_components/Footer";
 
 export const LayoutProvider = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
-  const showFooter = !pathname?.startsWith("/pdf-chat");
+  const showFooter = !(
+    pathname?.startsWith("/pdf-chat") || pathname?.startsWith("/chat/demo")
+  );
 
   return (
     <>

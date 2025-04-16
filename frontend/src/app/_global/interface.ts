@@ -1,3 +1,5 @@
+import { LucideProps } from "lucide-react";
+
 export interface UserDetail {
   id: string;
   name: string;
@@ -45,4 +47,61 @@ export interface ChatSession {
   latest_pdfId: string;
   title: string;
   userId?: string;
+  isNewSession?: boolean;
+}
+
+export interface PdfOption {
+  pdfId: string;
+  pdfName: string;
+  uploadedAt: string | Date;
+  pdfUrl: string;
+  sizeInMB?: number;
+  pageCount?: number;
+}
+
+export interface FeatureDetail {
+  text: string;
+  included: boolean;
+  tooltip?: string;
+}
+
+export interface PricingTier {
+  name: string;
+  price: string;
+  frequency: string;
+  description: string;
+  cta: string;
+  features: FeatureDetail[];
+  highlight: boolean;
+  themeColorClass?: string;
+  href?: string;
+}
+
+export interface RoadmapItem {
+  devName: string;
+  description: string;
+  status: "In Progress" | "Completed" | "Not Started" | "Skipped" | "On Hold";
+  priority: "Low" | "Medium" | "High";
+  startDate: Date;
+  endDate: Date;
+  comments?: string;
+}
+
+export interface IntegrationCardProps {
+  name: string;
+  description: string;
+  logoUrl: string;
+  status: "Live" | "Coming Soon" | "Beta";
+  category?: string;
+  docsUrl?: string;
+}
+
+export interface BlogPost {
+  slug: string;
+  title: string;
+  excerpt: string;
+  icon?: React.ElementType<LucideProps>;
+  date: string;
+  category: string;
+  author?: string;
 }
