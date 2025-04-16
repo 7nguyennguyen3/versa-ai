@@ -111,7 +111,7 @@ const Unauthorized = () => {
             size="lg"
             className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 font-semibold shadow-sm"
           >
-            <Link href="/auth/login">
+            <Link href="/auth/signin">
               {" "}
               {/* Ensure this matches redirect */}
               <LogIn className="mr-2 h-4 w-4" /> Log In Now

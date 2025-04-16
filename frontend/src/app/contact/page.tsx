@@ -62,7 +62,8 @@ const ContactPage = () => {
         err.response?.data?.error ||
         err.message ||
         "Failed to send message. Please try again later.";
-      toast.error("Submission Failed", { description: errMsg });
+      // toast.error("Submission Failed", { description: errMsg });
+      toast.info("We're currently implementing this feature. Stay tuned!");
       // setError(errMsg);
     } finally {
       setLoading(false);

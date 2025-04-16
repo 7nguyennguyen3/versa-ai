@@ -290,7 +290,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date("04/15/2025"),
     endDate: new Date(),
     comments: "Not Needed",
-    priority: "Medium",
+    priority: "High",
   },
   {
     devName: "Chatbot responding with citations and page numbers from PDF",
@@ -300,7 +300,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date("04/15/2025"),
     endDate: new Date(),
     comments: "Not Needed",
-    priority: "Medium",
+    priority: "High",
   },
   {
     devName: "Advanced Customization",
@@ -309,7 +309,7 @@ export const APP_ROADMAP: RoadmapProps[] = [
     startDate: new Date("04/15/2025"),
     endDate: new Date(),
     comments: "Not Needed",
-    priority: "Medium",
+    priority: "High",
   },
   {
     devName: "Optimize Uploaded PDF",
