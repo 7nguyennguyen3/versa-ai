@@ -7,7 +7,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator, // Added for Demo PDF selection
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -16,7 +16,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"; // Added for Auth settings
+} from "@/components/ui/select";
 import {
   Tooltip,
   TooltipContent,
@@ -32,21 +32,20 @@ import {
   Database,
   FileText,
   Loader2,
-  Lock, // Added for Auth settings
+  Lock,
   MessageSquare,
   PlusCircleIcon,
-  Settings, // Added for Auth settings trigger
+  Settings,
   Sparkles,
   User,
   XCircle,
 } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { v4 as uuidv4 } from "uuid"; // Added for new chat ID generation
+import { v4 as uuidv4 } from "uuid";
 import { ChatSession, PDFDocument } from "../../_global/interface";
-import { MODEL_OPTIONS, RETRIEVAL_OPTIONS } from "../../_global/variables"; // Added for Auth settings
+import { MODEL_OPTIONS, RETRIEVAL_OPTIONS } from "../../_global/variables";
 import { useAppStore } from "../../_store/useAppStore";
 
-// --- Props Interfaces --- (Keep as is)
 export interface StreamHandlers {
   onChunkReceived: (chunk: string) => void;
   onStreamComplete: (finalMessage: string) => void;
@@ -62,40 +61,31 @@ export interface SendMessageHandlerParams {
 }
 export interface UniversalChatComponentProps {
   isDemo: boolean;
-  userId?: string | null; // Make userId required when !isDemo, checked in parent
+  userId?: string | null;
   onSendMessage: (params: SendMessageHandlerParams) => Promise<void>;
-  pdfDataSource: PDFDocument[]; // Primarily for Demo
-  initialPdf?: PDFDocument; // Primarily for Demo
-  onDemoPdfSelected?: (pdf: PDFDocument) => void; // Demo only
-  onDemoNewChat?: () => void; // Demo only
+  pdfDataSource: PDFDocument[];
+  initialPdf?: PDFDocument;
+  onDemoPdfSelected?: (pdf: PDFDocument) => void;
+  onDemoNewChat?: () => void;
 }
 
-// --- PdfSidebar Component --- (Keep as is)
 interface PdfSidebarProps {
   pdfUrl: string;
   isOpen: boolean;
   onClose: () => void;
 }
 const PdfSidebar: React.FC<PdfSidebarProps> = ({ pdfUrl, isOpen, onClose }) => {
-  // Original Escape key listener (keep as is)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Check if the event target is inside the iframe or the sidebar itself
-      // If it is, don't close via Escape, let the user click outside or use the button
       const activeElement = document.activeElement;
       if (
         e.key === "Escape" &&
         isOpen &&
-        activeElement?.tagName !== "IFRAME" && // Check if iframe is NOT focused
-        !activeElement?.closest('[data-testid="pdf-sidebar-content"]') // Check if focus isn't inside the sidebar content itself
+        activeElement?.tagName !== "IFRAME" &&
+        !activeElement?.closest('[data-testid="pdf-sidebar-content"]')
       ) {
         onClose();
       }
-      // Alternative simpler check: If the iframe is likely focused, Esc won't work anyway.
-      // This listener will only fire if the main window has focus.
-      // if (e.key === 'Escape' && isOpen) {
-      //   onClose();
-      // }
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -175,8 +165,6 @@ const BouncingDotsLoader = () => (
   </div>
 );
 
-// --- Main Reusable Chat Component ---
-
 const UniversalChatComponent: React.FC<UniversalChatComponentProps> = ({
   isDemo,
   userId, // Assumed to be non-null if isDemo is false (enforce in parent)
@@ -227,15 +215,12 @@ const UniversalChatComponent: React.FC<UniversalChatComponentProps> = ({
       resetDemoState();
       if (initialPdf && !selectedPdf) {
         setCurrentPdf(initialPdf);
-        // Ensure messages are clear for initial demo load if needed
         updateMessagesFromHistory([]);
       }
     } else if (userId) {
       // Fetch initial data for authenticated user
       // fetchPdfOptions(userId);
       // fetchChatOptions(userId);
-      // Optional: Load the most recent chat or a default state
-      // This logic might live in the parent or here, depending on desired behavior
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -244,12 +229,10 @@ const UniversalChatComponent: React.FC<UniversalChatComponentProps> = ({
     resetDemoState,
     initialPdf,
     setCurrentPdf,
-    // fetchPdfOptions,
-    // fetchChatOptions,
+    fetchPdfOptions,
+    fetchChatOptions,
   ]);
-  // Removed updateMessagesFromHistory from demo's initial effect dependencies to avoid potential loops if initialPdf changes
 
-  // Clear error when chat/pdf changes
   useEffect(() => {
     if (currentChatId || selectedPdf) {
       setError(null);
@@ -322,8 +305,6 @@ const UniversalChatComponent: React.FC<UniversalChatComponentProps> = ({
     [setChatLoading]
   );
 
-  // --- User Action Handlers ---
-
   const handleSendMessageInternal = async () => {
     if (!message.trim()) return;
 
@@ -374,7 +355,6 @@ const UniversalChatComponent: React.FC<UniversalChatComponentProps> = ({
     // No finally block needed as handleStreamError/Complete resets loading state
   };
 
-  // --- Demo Specific Handlers ---
   const handleDemoPdfChange = (pdfUrl: string) => {
     const pdf = pdfDataSource.find((p) => p.pdfUrl === pdfUrl);
     if (pdf) {
@@ -388,17 +368,14 @@ const UniversalChatComponent: React.FC<UniversalChatComponentProps> = ({
     }
   };
   const handleDemoNewChatClick = () => {
-    // In demo, changing PDF effectively starts a new chat context
-    // This button might just clear messages if the same PDF is kept
     updateMessagesFromHistory([]);
     setStreamingAiResponse("");
     setError(null);
     if (onDemoNewChat) {
-      onDemoNewChat(); // Potentially useful for parent state if needed
+      onDemoNewChat();
     }
   };
 
-  // --- Authenticated User Settings Handlers ---
   const handleAuthPdfSelection = (pdfId: string) => {
     const pdf = pdfOptions.find((p) => p.pdfId === pdfId);
     if (pdf) {
@@ -439,7 +416,6 @@ const UniversalChatComponent: React.FC<UniversalChatComponentProps> = ({
     if (!userId) return; // Should not happen if logic is correct
 
     const newSessionId = uuidv4();
-    // Add the new chat optimistically to the store
     addNewChatSession(userId, newSessionId);
 
     // Immediately set the new chat as current

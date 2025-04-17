@@ -1,11 +1,11 @@
 "use client";
 
 import axios from "axios";
+import { motion } from "framer-motion"; // Import motion
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { KeyboardEvent, useMemo, useState } from "react";
+import { KeyboardEvent, useEffect, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { motion } from "framer-motion"; // Import motion
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -156,7 +156,7 @@ const DashboardPage = () => {
     isLoadingOptions,
     updateMessagesFromHistory,
   } = useAppStore();
-  const { userId, name: userName } = useAuthStore();
+  const { userId } = useAuthStore();
   const router = useRouter();
 
   const [currentUploadPage, setCurrentUploadPage] = useState(1);
@@ -168,9 +168,15 @@ const DashboardPage = () => {
   const [isSavingRename, setIsSavingRename] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  useEffect(() => {
+    const justLoggedIn = sessionStorage.getItem("justLoggedIn");
 
-  // --- Memoized Pagination (Unchanged) ---
+    if (justLoggedIn === "true") {
+      sessionStorage.removeItem("justLoggedIn");
+      window.location.reload();
+    }
+  }, []);
+
   const paginatedData = useMemo(() => {
     const pdfs = pdfOptions || [];
     const chats = chatOptions || [];

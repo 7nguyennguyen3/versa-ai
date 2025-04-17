@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  // Retrieve the token from the HTTP-only cookie
   const token = req.cookies.get("token")?.value;
 
   if (!token) {

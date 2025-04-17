@@ -1,25 +1,23 @@
 "use client";
 
-import { ThirdPartyAuth } from "@/app/auth/_component/ThirdPartyAuth"; // Adjust path
 import { useAuthStore } from "@/app/_store/useAuthStore"; // Adjust path
+import { ThirdPartyAuth } from "@/app/auth/_component/ThirdPartyAuth"; // Adjust path
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import axios, { AxiosError } from "axios"; // Import AxiosError
-import { Eye, EyeOff, Loader2, LogIn } from "lucide-react"; // Added icons
-import { useRouter } from "next/navigation";
-import React, { useState, FormEvent } from "react"; // Added FormEvent
-import Link from "next/link";
+import axios from "axios"; // Import AxiosError
 import { motion } from "framer-motion";
-// import YourLogo from "@/components/YourLogo"; // Import your logo component
+import { Eye, EyeOff, Loader2, LogIn } from "lucide-react"; // Added icons
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react"; // Added FormEvent
 
 const SignInPage = () => {
   const router = useRouter();
@@ -31,24 +29,21 @@ const SignInPage = () => {
   const { checkStatus } = useAuthStore();
 
   const handleSignIn = async (e: FormEvent<HTMLFormElement>) => {
-    // Typed event
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
       const response = await axios.post("/api/auth/signin", {
-        // Adjust API path
         email,
         password,
       });
 
       if (response.status === 200) {
-        await checkStatus(); // Refresh auth state
-        // Redirect to dashboard or intended page after login
-        router.push("/dashboard"); // Example redirect
+        await checkStatus();
+        sessionStorage.setItem("justLoggedIn", "true");
+        router.push("/dashboard");
       } else {
-        // Handle non-200 success statuses if necessary
         setError(
           response.data?.message || "Login failed: Unexpected status code."
         );

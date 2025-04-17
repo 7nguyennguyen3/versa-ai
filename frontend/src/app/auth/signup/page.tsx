@@ -1,25 +1,23 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
-import axios, { AxiosError } from "axios";
-import { Input } from "@/components/ui/input";
+import { useAuthStore } from "@/app/_store/useAuthStore"; // Adjust path
+import { ThirdPartyAuth } from "@/app/auth/_component/ThirdPartyAuth"; // Adjust path
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/app/_store/useAuthStore"; // Adjust path
-import { ThirdPartyAuth } from "@/app/auth/_component/ThirdPartyAuth"; // Adjust path
-import { Eye, EyeOff, Loader2, UserPlus } from "lucide-react"; // Added icons
-import Link from "next/link";
+import axios from "axios";
 import { motion } from "framer-motion";
-// import YourLogo from "@/components/YourLogo"; // Import your logo component
+import { Eye, EyeOff, Loader2, UserPlus } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
 
 const SignUpPage = () => {
   const router = useRouter();
@@ -51,8 +49,9 @@ const SignUpPage = () => {
       });
 
       if (response.status === 201) {
-        await checkStatus(); // Refresh auth state
-        router.push("/dashboard"); // Redirect on success - Adjust path
+        await checkStatus();
+        sessionStorage.setItem("justLoggedIn", "true");
+        router.push("/dashboard");
       } else {
         setError(
           response.data?.message || "Signup failed: Unexpected status code."

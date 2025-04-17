@@ -1,7 +1,7 @@
 "use client";
 
 import axios from "axios";
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import UniversalChatComponent, {
   SendMessageHandlerParams,
 } from "../_components/chat/UniversalChatComponent";
@@ -22,10 +22,9 @@ const getTokenFromApi = async (): Promise<string | null> => {
     return null;
   }
 };
-// --- End Token Fetching Logic ---
 
 const PdfChatPage = () => {
-  const { userId } = useAuthStore(); // Get authoritative userId
+  const { userId, authenticated } = useAuthStore();
 
   const updateChatTitleAction = useAppStore.getState().updateChatTitle;
   const markSessionAsNotNewAction = useAppStore.getState().markSessionAsNotNew;
@@ -69,9 +68,6 @@ const PdfChatPage = () => {
           );
         }
 
-        console.log(
-          `Sending POST to /chat_send for session: ${sessionIdToUse}, isNewSession: ${isNewSessionForThisRequest}`
-        );
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -86,9 +82,6 @@ const PdfChatPage = () => {
           retrievalMethod: currentRetrievalMethod,
           isNewSession: isNewSessionForThisRequest,
         };
-        // Log the actual payload being sent
-        console.log("Sending Payload:", payload);
-        // --- END CORRECTED PAYLOAD ---
 
         const res = await axios.post(
           `${process.env.NEXT_PUBLIC_CHAT_ENDPOINT}/chat_send`,
@@ -97,21 +90,15 @@ const PdfChatPage = () => {
         );
 
         if (res.data?.new_title) {
-          console.log(
-            `Updating title for ${sessionIdToUse} to: ${res.data.new_title}`
-          );
           updateChatTitleAction(sessionIdToUse, res.data.new_title);
         } else {
-          console.log("No new title received from /chat_send");
         }
 
         if (isNewSessionForThisRequest) {
-          console.log(`Marking session ${sessionIdToUse} as not new anymore.`);
           markSessionAsNotNewAction(sessionIdToUse);
         }
 
         const streamUrl = `${process.env.NEXT_PUBLIC_CHAT_ENDPOINT}/chat_stream/${sessionIdToUse}`;
-        console.log("Opening EventSource:", streamUrl);
         eventSource = new EventSource(streamUrl);
 
         // --- Handle Stream Events (Keep as is) ---
@@ -149,7 +136,6 @@ const PdfChatPage = () => {
 
         // Using specific 'end' event from backend publisher
         eventSource.addEventListener("end", (event) => {
-          console.log("EventSource 'end' event received for:", sessionIdToUse);
           if (eventSource) {
             eventSource.close();
             eventSource = null;
@@ -195,10 +181,9 @@ const PdfChatPage = () => {
         streamHandlers.onStreamError(errorMsg);
       }
     },
-    [userId, updateChatTitleAction, markSessionAsNotNewAction] // Keep dependencies minimal or add actions if needed for stability
+    [userId, updateChatTitleAction, markSessionAsNotNewAction]
   );
 
-  // --- Render Logic (Keep as is) ---
   if (!userId) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-100">
