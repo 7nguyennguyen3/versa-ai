@@ -1,4 +1,5 @@
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_openai import ChatOpenAI
+from langchain_voyageai import VoyageAIEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.prompts import ChatPromptTemplate
@@ -43,32 +44,38 @@ def create_chain(
 ):
     mode = mode if mode in {"similarity", "mmr", "hybrid"} else "auto"
 
-    embeddings = OpenAIEmbeddings()
+    embeddings = VoyageAIEmbeddings(model="voyage-3")
     if demo == True:
-        vectorstore = Pinecone.from_existing_index("versa-ai", embeddings)
+        vectorstore = Pinecone.from_existing_index("versa-ai-demo", embeddings)
     else:
-        vectorstore = Pinecone.from_existing_index("development", embeddings)
+        vectorstore = Pinecone.from_existing_index("versa-ai-voyage", embeddings)
 
     retriever = get_retriever(vectorstore, user_id, pdf_id, mode=mode)
 
-    template = """Answer the question based only on the following context:
-    --- Guidelines ---
-    1. If the context provides a clear and accurate answer, respond directly using the most relevant information.
-    2. If the question is vague, ambiguous, or missing details, politely ask the user for clarification before proceeding.
-    3. If the context lacks relevant information, acknowledge the gap and provide general knowledge where appropriate. 
-    4. If the question involves historical events or multiple interpretations, briefly summarize key points and ask if the user needs more details.
-    5. Always be concise but informative. Keep responses clear, and when necessary, provide references or suggest further reading.
-    6. If the context is too long or complex, summarize the main points and ask if the user wants more details on a specific aspect.
+    template = """You are a helpful AI assistant answering questions based on provided documents and conversation history.
+        Your primary goal is to use the information in the 'Retrieved Documents' section to answer the 'User Question'.
+        Use the 'Chat History' to understand the context of the conversation and avoid repeating information.
 
-    Now answer the question based on the context below:
-    User question: {question}
+        Instructions:
 
-    Previous chat history with user:
-    {chat_history}
+        1.  Prioritize Context: Base your answer strictly on the 'Retrieved Documents'. Do not add information not found there unless the documents explicitly lack the necessary information to answer the question *at all*.
+        2.  Acknowledge Gaps: If the documents do not contain the answer, state that clearly (e.g., "The provided documents don't contain information about X."). You may provide relevant general knowledge *only* if the documents are insufficient AND doing so directly addresses the user's likely need, but clearly label it as external information (e.g., "Based on general knowledge outside the documents...").
+        3.  Clarify Ambiguity: If the 'User Question' is unclear, ambiguous, or seems to misunderstand the context, ask for clarification before providing a potentially incorrect answer.
+        4.  Be Concise and Relevant: Provide clear, direct answers focused on the user's query. If the relevant context is very long, summarize the key points first and ask if the user needs more detail on a specific aspect.
+        5.  Use Chat History: Refer to the 'Chat History' to maintain conversational context and avoid redundancy. If the user asks something already covered, gently point it out or build upon the previous answer.
 
-    Documents that are being fetched from the vectorstore:
-    {context}
-    """
+        ---
+        Chat History:
+        {chat_history}
+        ---
+        Retrieved Documents:
+        {context}
+        ---
+        User Question: {question}
+        ---
+
+        Answer:
+        """
 
     prompt = ChatPromptTemplate.from_template(template)
 

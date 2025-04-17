@@ -227,7 +227,8 @@ export const APP_ROADMAP: RoadmapProps[] = [
     description: "Add CSRF protection to secure the application.",
     startDate: new Date("04/14/2025"),
     endDate: new Date(),
-    comments: "",
+    comments:
+      "Might need to do subdomain for backend and reverse proxy. Possibly use SameSite=True",
     priority: "High",
   },
   {
@@ -289,7 +290,8 @@ export const APP_ROADMAP: RoadmapProps[] = [
     description: "Consder moving to Langgraph in addition to using Langchain.",
     startDate: new Date("04/15/2025"),
     endDate: new Date(),
-    comments: "Not Needed",
+    comments:
+      "Added LLM to refine user query before retrieving data, possibly adding document grader and condition to refetch/modified query again.",
     priority: "High",
   },
   {
@@ -332,10 +334,10 @@ export const pricingTiers: PricingTier[] = [
     cta: "Sign Up Free",
     href: "/auth/signup?plan=free", // Example link
     features: [
-      { text: "15 Documents / month", included: true },
-      { text: "50MB Upload Limit / file", included: true },
+      { text: "20 Documents / month", included: true },
+      { text: "10MB Upload Limit / file", included: true },
       { text: "Standard AI Model", included: true },
-      { text: "Basic Chat History (7 days)", included: true },
+      { text: "Basic Chat History (30 days)", included: true },
       { text: "Multi-Document Chat (Max 2 docs)", included: false },
       { text: "OCR for Scanned Docs (Limited)", included: false },
       { text: "API Access", included: false },
@@ -414,7 +416,7 @@ export const PLAN_LIMITS = {
 
 export const MODEL_OPTIONS = [
   {
-    name: "Gemini-2.0",
+    name: "Gemini-2.0 (Recommended)",
     value: "gemini-2.0",
     disabled: false,
   },

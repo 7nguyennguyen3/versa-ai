@@ -14,10 +14,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import axios from "axios"; // Import AxiosError
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Loader2, LogIn } from "lucide-react"; // Added icons
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle,
+  Eye,
+  EyeOff,
+  Loader2,
+  LogIn,
+  Settings,
+} from "lucide-react"; // Added icons
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react"; // Added FormEvent
+import LoggedInAlready from "../_component/LoggedInAlready";
 
 const SignInPage = () => {
   const router = useRouter();
@@ -26,7 +36,7 @@ const SignInPage = () => {
   const [showPassword, setShowPassword] = useState(false); // State for password visibility
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { checkStatus } = useAuthStore();
+  const { checkStatus, authenticated, userId, name } = useAuthStore();
 
   const handleSignIn = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -62,6 +72,8 @@ const SignInPage = () => {
       setLoading(false);
     }
   };
+
+  if (authenticated && userId) return <LoggedInAlready name={name} />;
 
   return (
     <div

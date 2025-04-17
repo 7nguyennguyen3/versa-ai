@@ -24,7 +24,7 @@ const getTokenFromApi = async (): Promise<string | null> => {
 };
 
 const PdfChatPage = () => {
-  const { userId, authenticated } = useAuthStore();
+  const { userId } = useAuthStore();
 
   const updateChatTitleAction = useAppStore.getState().updateChatTitle;
   const markSessionAsNotNewAction = useAppStore.getState().markSessionAsNotNew;
@@ -181,7 +181,7 @@ const PdfChatPage = () => {
         streamHandlers.onStreamError(errorMsg);
       }
     },
-    [userId, updateChatTitleAction, markSessionAsNotNewAction]
+    [updateChatTitleAction, markSessionAsNotNewAction]
   );
 
   if (!userId) {

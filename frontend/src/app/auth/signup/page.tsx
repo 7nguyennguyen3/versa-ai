@@ -18,6 +18,7 @@ import { Eye, EyeOff, Loader2, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import LoggedInAlready from "../_component/LoggedInAlready";
 
 const SignUpPage = () => {
   const router = useRouter();
@@ -27,7 +28,7 @@ const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { checkStatus } = useAuthStore();
+  const { checkStatus, authenticated, userId, name: userName } = useAuthStore();
 
   const handleSignUp = async (e: FormEvent<HTMLFormElement>) => {
     // Typed event
@@ -70,6 +71,8 @@ const SignUpPage = () => {
       setLoading(false);
     }
   };
+
+  if (authenticated && userId) return <LoggedInAlready name={userName} />;
 
   return (
     <div className="flex flex-col min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-100 p-4">

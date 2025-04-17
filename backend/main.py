@@ -28,11 +28,14 @@ logging.info("🚀 Logging is set up globally!")
 # Now import other modules
 from app.db import lifespan
 from app.routes import router
+from app.demo_routes import demo_router
 
 allowed_origins = os.getenv("ALLOWED_ORIGINS")
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(router)
+app.include_router(demo_router)
+
 
 app.add_middleware(
     CORSMiddleware,

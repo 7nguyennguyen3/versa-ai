@@ -455,8 +455,9 @@ const UniversalChatComponent: React.FC<UniversalChatComponentProps> = ({
   };
 
   const promptSuggestions = [
-    "Summarize the key points of this document.",
-    "What are the main arguments presented?",
+    "Give me a quick overview of this PDF.",
+    "Break down the key points of this file.",
+    "What is the purpose of this document?",
   ];
 
   return (
@@ -708,10 +709,10 @@ const UniversalChatComponent: React.FC<UniversalChatComponentProps> = ({
                           size="icon"
                           // Consider slightly larger for easier clicking:
                           // className="text-gray-700 hover:text-blue-600 hover:bg-gray-100 h-9 w-9"
-                          className="text-gray-600 hover:text-blue-600 h-8 w-8" // Kept original size, adjust if needed
+                          className="text-black hover:text-blue-600 h-8 w-8" // Kept original size, adjust if needed
                           aria-label="Chat Settings"
                         >
-                          <Settings className="h-5 w-5" />{" "}
+                          <Settings className="scale-125" />{" "}
                           {/* Adjusted icon size slightly */}
                         </Button>
                       </DropdownMenuTrigger>
