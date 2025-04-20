@@ -2,11 +2,12 @@
 
 import axios from "axios";
 import { useCallback } from "react";
+
+import { useAppStore } from "../_store/useAppStore";
+import { useAuthStore } from "../_store/useAuthStore";
 import UniversalChatComponent, {
   SendMessageHandlerParams,
 } from "../_components/chat/UniversalChatComponent";
-import { useAppStore } from "../_store/useAppStore";
-import { useAuthStore } from "../_store/useAuthStore";
 
 const getTokenFromApi = async (): Promise<string | null> => {
   try {

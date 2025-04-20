@@ -14,20 +14,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import axios from "axios"; // Import AxiosError
 import { motion } from "framer-motion";
-import {
-  AlertTriangle,
-  ArrowRight,
-  CheckCircle,
-  Eye,
-  EyeOff,
-  Loader2,
-  LogIn,
-  Settings,
-} from "lucide-react"; // Added icons
+import { Eye, EyeOff, Key, Loader2, LogIn } from "lucide-react"; // Added icons
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react"; // Added FormEvent
-import LoggedInAlready from "../_component/LoggedInAlready";
+import LoggedInRedirect from "../_component/LoggedInRedirect";
 
 const SignInPage = () => {
   const router = useRouter();
@@ -73,7 +64,7 @@ const SignInPage = () => {
     }
   };
 
-  if (authenticated && userId) return <LoggedInAlready name={name} />;
+  if (authenticated && userId) return <LoggedInRedirect name={name} />;
 
   return (
     <div
@@ -167,7 +158,7 @@ const SignInPage = () => {
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full text-base py-3"
+                className="w-full text-sm py-3 gap-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-sm hover:shadow"
                 disabled={loading}
               >
                 {loading ? (
@@ -176,7 +167,10 @@ const SignInPage = () => {
                     in...
                   </>
                 ) : (
-                  "Sign In"
+                  <>
+                    Sign In
+                    <LogIn className="scale-110" />
+                  </>
                 )}
               </Button>
 

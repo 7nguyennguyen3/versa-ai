@@ -4,6 +4,7 @@ from .session_manager_firebase import SessionManager
 from contextlib import asynccontextmanager
 from .bg_worker import background_flush_task, cleanup_stale_flush_keys
 from .bg_pdf_worker import process_pdf_worker
+from .demo_routes import start_cleanup_task
 import os
 import logging
 import asyncio
@@ -19,6 +20,7 @@ load_dotenv()
 REDIS_URL = os.getenv("REDIS_URL")
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 FIREBASE_CREDENTIALS_BASE64 = os.getenv("FIREBASE_CREDENTIALS_BASE64")
+
 
 async def init_redis():
     """Initialize Redis connection asynchronously."""
@@ -40,6 +42,7 @@ async def init_redis():
         logging.error(f"❌ Failed to connect to Redis: {e}")
         return None
 
+
 try:
     encoded_credentials = FIREBASE_CREDENTIALS_BASE64
     if not encoded_credentials:
@@ -50,7 +53,9 @@ try:
 
     # Initialize Firebase Admin SDK
     cred = credentials.Certificate(decoded_json)
-    firebase_admin.initialize_app(cred, {"storageBucket": decoded_json["storageBucket"]})
+    firebase_admin.initialize_app(
+        cred, {"storageBucket": decoded_json["storageBucket"]}
+    )
 
     # Global Firestore and Storage Clients
     firestore_db = firestore.client()
@@ -63,24 +68,29 @@ except Exception as e:
     firestore_db = None
     firebase_storage = None
 
+
 @asynccontextmanager
 async def lifespan(app):
     """Manage application startup and shutdown lifecycle."""
     # Initialize Redis and store in app state
     app.state.redis_instance = await init_redis()
-    
+
     # Initialize SessionManager with Redis
     if firestore_db:
-        app.state.session_manager_firebase = SessionManager(firestore_db, app.state.redis_instance)
+        app.state.session_manager_firebase = SessionManager(
+            firestore_db, app.state.redis_instance
+        )
     else:
         app.state.session_manager_firebase = None
 
     # Start background tasks
     asyncio.create_task(background_flush_task(app.state.redis_instance, firestore_db))
     asyncio.create_task(cleanup_stale_flush_keys(app.state.redis_instance))
-    
+
     # Start PDF processing worker
     asyncio.create_task(process_pdf_worker(app.state.redis_instance))
+
+    start_cleanup_task()
 
     yield  # Keeps the app running
 

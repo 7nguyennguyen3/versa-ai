@@ -1,13 +1,14 @@
 # demo_routes.py
 
-from fastapi import APIRouter, Request, status, HTTPException, Depends, FastAPI
+from fastapi import APIRouter, Request, status, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
 import asyncio
 import logging
+import json
 import os
 import time
 from collections import defaultdict
-from typing import Dict, List, Any
+from typing import Dict, List
 
 # Assume your local imports work
 from .pinecone_retriever_chain import create_chain
@@ -147,17 +148,12 @@ async def demo_chat_stream(request: Request, chat_session_id: str):
         )
 
         # --- Dequeue Message ---
-        # Check if queue exists (it should if send was called)
         if chat_session_id not in message_queues:
-            # This might happen if stream is called before send, or after cleanup
             logging.warning(
                 f"No active message queue found for session {chat_session_id}. Did send run?"
             )
-            # Decide how to handle: wait, error, or empty stream? Let's wait briefly.
-            # A better approach might involve signalling from the send endpoint.
-            # For now, just try getting, it will block or raise if queue removed.
-            # Consider adding a timeout to the get() call:
             try:
+                # Add timeout to prevent infinite waiting if send fails
                 message_data = await asyncio.wait_for(
                     message_queues[chat_session_id].get(), timeout=10.0
                 )
@@ -166,8 +162,8 @@ async def demo_chat_stream(request: Request, chat_session_id: str):
                     f"Timeout waiting for message for session {chat_session_id}"
                 )
 
-                # Return an empty stream or an error event
                 async def empty_stream():
+                    # Using the same error format as generation errors
                     yield "event: error\ndata: Timeout waiting for message\n\n"
 
                 return StreamingResponse(empty_stream(), media_type="text/event-stream")
@@ -177,16 +173,23 @@ async def demo_chat_stream(request: Request, chat_session_id: str):
                 )
 
                 async def error_stream():
+                    # Using the same error format as generation errors
                     yield "event: error\ndata: Session expired or not found\n\n"
 
                 return StreamingResponse(error_stream(), media_type="text/event-stream")
-
         else:
             # Get the message data from the queue for this session (blocks if empty)
             message_data = await message_queues[chat_session_id].get()
 
         user_message = message_data["message"]
         pdf_id = message_data["pdf_id"]
+        model = message_data.get(
+            "model", "gemini-2.0"
+        )  # Get model, default if not present
+        retrieval_method = message_data.get(
+            "retrieval_method", "auto"
+        )  # Get retrieval_method, default if not present
+
         logging.info(
             f"📬 Dequeued message for session {chat_session_id}: '{user_message}'"
         )
@@ -214,6 +217,7 @@ async def demo_chat_stream(request: Request, chat_session_id: str):
             chat_history=history_before_current,  # History BEFORE current message
             query=user_message,
             logger=logging,  # Pass the logger instance
+            # Optionally add model_name or temperature arguments if needed
         )
         # --- End Refinement ---
 
@@ -224,9 +228,11 @@ async def demo_chat_stream(request: Request, chat_session_id: str):
         # --- Create Main Retrieval Chain ---
         retrieval_chain = create_chain(
             chat_history=current_history_for_chain,
-            user_id="demo-user",
-            pdf_id=pdf_id,  # Use pdf_id obtained from queue
-            demo=True,
+            user_id="demo-user",  # Hardcoded user_id for demo
+            pdf_id=pdf_id,
+            demo=True,  # Flag for demo mode (e.g., different vector store)
+            preferred_model=model,  # Pass model from request
+            mode=retrieval_method,  # Pass retrieval_method from request
         )
 
         # --- Generate Streaming Response ---
@@ -234,42 +240,115 @@ async def demo_chat_stream(request: Request, chat_session_id: str):
             """Generator function to stream AI responses and update history."""
             ai_response_chunks = []
             ai_response_generated = False
+            # State to track if the last character processed was a newline
+            # Used to determine if leading whitespace should be stripped from the next chunk
+            last_char_was_newline = (
+                True  # State: Assume the response starts after a conceptual newline
+            )
+
             try:
                 # Stream the response using the REFINED query
                 async for chunk in retrieval_chain.astream(refined_query):
                     content_to_process = None
-                    # (Chunk handling logic as before)
+                    # Handle different possible chunk structures (adapt as needed)
                     if isinstance(chunk, dict):
                         if "answer" in chunk:
                             content_to_process = chunk["answer"]
                         elif "content" in chunk:
                             content_to_process = chunk["content"]
+                        elif (
+                            "text" in chunk
+                        ):  # Added 'text' based on previous observation
+                            content_to_process = chunk["text"]
                     elif hasattr(chunk, "content"):
                         content_to_process = chunk.content
+                    # Add a fallback for raw string chunks if they occur unexpectedly
+                    elif isinstance(chunk, str):
+                        content_to_process = chunk
 
                     if content_to_process is not None and isinstance(
                         content_to_process, str
                     ):
                         ai_response_generated = True
+
+                        processed_chunk_for_stream = content_to_process
+
+                        # --- Streaming Post-processing: Remove leading whitespace from lines ---
+                        # Only strip leading whitespace if the previous character was a newline.
+                        # This targets unintended indentation at the start of lines (like for paragraphs or lists).
+                        # This WILL remove indentation from 'indented code blocks' (4+ spaces) if they start a chunk after a newline.
+                        # It should generally preserve indentation *within* fenced code blocks (```).
+                        if (
+                            last_char_was_newline
+                            and processed_chunk_for_stream.lstrip()
+                            != processed_chunk_for_stream
+                        ):
+                            # If the last char was a newline AND the chunk starts with whitespace, strip it.
+                            processed_chunk_for_stream = (
+                                processed_chunk_for_stream.lstrip()
+                            )
+                        # --- End Streaming Post-processing ---
+
+                        # Append the original chunk to the list for accumulating the full response (for history)
                         ai_response_chunks.append(content_to_process)
-                        yield f"data: {content_to_process}\n\n"
+
+                        # Create the SSE payload with the potentially processed chunk
+                        sse_payload = {
+                            "type": "chunk",
+                            "content": processed_chunk_for_stream,
+                        }
+                        # Ensure the payload is a valid JSON string
+                        try:
+                            yield f"data: {json.dumps(sse_payload)}\n\n"
+                        except Exception as json_e:
+                            logging.error(
+                                f"Failed to JSON encode payload: {sse_payload}. Error: {json_e}"
+                            )
+                            # Optionally yield an error event here if JSON encoding fails
+                            yield f"event: error\ndata: Failed to encode response chunk.\n\n"
+                            # Decide if you want to stop the stream here or try to continue
+
+                        # Update the state for the next chunk based on the *original* chunk
+                        if content_to_process:  # Only update if the chunk had content
+                            if content_to_process.endswith("\n"):
+                                last_char_was_newline = True
+                            else:
+                                # If the chunk contains newlines within it, check the very last character
+                                last_char_was_newline = content_to_process.endswith(
+                                    "\n"
+                                )
+                        # If content_to_process was None or empty string, the state doesn't change
+
+                # If content_to_process was None or not a string, the loop continues,
+                # but we should ensure last_char_was_newline is handled.
+                # If a chunk is not text (e.g., tool calls), we might need to handle state update based on its effect,
+                # but assuming the chain only yields text chunks for the final answer stream.
 
                 # Send end event
-                yield "event: end\ndata: finished\n\n"
+                yield "event: end\ndata: \n\n"  # Empty data field for end event
 
                 # --- History Update ---
+                # Note: The full_ai_response accumulated here uses the *original* chunks.
+                # If you want the history to store the *processed* version, you would need
+                # to accumulate `processed_chunk_for_stream` instead, but this might lose
+                # intentional indentation inside code blocks in the history.
+                # Let's keep accumulating original for history for now, assuming history stores raw AI output.
                 full_ai_response = "".join(ai_response_chunks)
                 async with memory_lock:
                     # Add the processed human message and AI response to shared history
                     demo_chat_histories[chat_session_id].append(human_msg_object)
                     if ai_response_generated:
-                        ai_msg = AIMessage(content=full_ai_response)
+                        # If you want history to store processed, process full_ai_response here
+                        # processed_full_response = process_full_text_markdown_indentation(full_ai_response) # Requires a new function
+                        ai_msg = AIMessage(
+                            content=full_ai_response
+                        )  # Storing original AI output
                         demo_chat_histories[chat_session_id].append(ai_msg)
                         log_msg = f"Stored Human+AI messages for {chat_session_id}."
                     else:
                         log_msg = f"Stored Human message for {chat_session_id} (No AI response)."
                         logging.warning(
-                            f"No AI response generated for {chat_session_id}"
+                            f"No AI response generated for session {chat_session_id}"
                         )
 
                     logging.info(
@@ -283,6 +362,7 @@ async def demo_chat_stream(request: Request, chat_session_id: str):
                     f"❌ Error generating stream for session {chat_session_id}: {e}"
                 )
                 error_message = f"Error processing message: {str(e)}".replace("\n", " ")
+                # Error format already matches
                 yield f"event: error\ndata: {error_message}\n\n"
 
         return StreamingResponse(generate(), media_type="text/event-stream")

@@ -18,7 +18,7 @@ import { Eye, EyeOff, Loader2, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import LoggedInAlready from "../_component/LoggedInAlready";
+import LoggedInRedirect from "../_component/LoggedInRedirect";
 
 const SignUpPage = () => {
   const router = useRouter();
@@ -72,7 +72,7 @@ const SignUpPage = () => {
     }
   };
 
-  if (authenticated && userId) return <LoggedInAlready name={userName} />;
+  if (authenticated && userId) return <LoggedInRedirect name={userName} />;
 
   return (
     <div className="flex flex-col min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-100 p-4">
@@ -176,7 +176,7 @@ const SignUpPage = () => {
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full text-base py-3"
+                className="w-full text-sm py-3 gap-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-sm hover:shadow"
                 disabled={loading}
               >
                 {loading ? (
@@ -185,7 +185,10 @@ const SignUpPage = () => {
                     Up...
                   </>
                 ) : (
-                  "Create Account"
+                  <>
+                    Create Account
+                    <UserPlus className="scale-110" />
+                  </>
                 )}
               </Button>
 

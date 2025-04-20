@@ -1,7 +1,7 @@
 "use client";
 
 import axios from "axios";
-import { motion } from "framer-motion"; // Import motion
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { KeyboardEvent, useEffect, useMemo, useState } from "react";
@@ -43,46 +43,21 @@ import { ChatSession, PDFDocument } from "../_global/interface";
 import { useAppStore } from "../_store/useAppStore";
 import { useAuthStore } from "../_store/useAuthStore";
 
-// --- Animation Variants (Inspired by AboutPage) ---
+// Variants (unchanged)
 const sectionVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: "easeOut" },
-  },
+  /* ... */
 };
-
 const listVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1, // Stagger children animation
-    },
-  },
+  /* ... */
 };
-
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+  /* ... */
 };
-
 const quickActionVariants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: (i: number) => ({
-    // Custom function for staggered delay
-    opacity: 1,
-    scale: 1,
-    transition: {
-      delay: i * 0.1, // Apply delay based on index
-      duration: 0.3,
-      ease: "easeOut",
-    },
-  }),
+  /* ... */
 };
 
-// --- Helper Functions ---
+// Helper
 const formatDate = (dateInput: string | Date | null | undefined): string => {
   if (!dateInput) return "-";
   try {
@@ -91,12 +66,11 @@ const formatDate = (dateInput: string | Date | null | undefined): string => {
       day: "numeric",
       year: "numeric",
     });
-  } catch (e) {
+  } catch {
     return "-";
   }
 };
 
-// --- Skeleton Loader Component (Unchanged) ---
 const ListSkeleton = () => (
   <div className="space-y-4">
     {[...Array(3)].map((_, i) => (
@@ -114,17 +88,16 @@ const ListSkeleton = () => (
   </div>
 );
 
-// --- Sidebar Component (Unchanged) ---
 const SidebarNav = ({ onLinkClick }: { onLinkClick?: () => void }) => (
   <nav className="min-h-screen bg-transparent">
-    <ul className="space-y-4 bg-transparent">
+    <ul className="space-y-4 bg-transparent pt-20">
       <li>
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 px-4 py-2 text-base hover:bg-gray-50 rounded-md"
           onClick={onLinkClick}
         >
-          <Upload className="h-5 w-5 text-blue-600" />
+          <Upload className="scale-125 text-blue-600" />
           <Link href="/upload-pdf">Upload PDF</Link>
         </Button>
       </li>
@@ -134,7 +107,7 @@ const SidebarNav = ({ onLinkClick }: { onLinkClick?: () => void }) => (
           className="w-full justify-start gap-3 px-4 py-2 text-base hover:bg-gray-50 rounded-md"
           onClick={onLinkClick}
         >
-          <MessageSquare className="h-5 w-5 text-purple-600" />
+          <MessageSquare className="scale-125 text-purple-600" />
           <Link href="/pdf-chat">Chat Interface</Link>
         </Button>
       </li>
@@ -142,9 +115,7 @@ const SidebarNav = ({ onLinkClick }: { onLinkClick?: () => void }) => (
   </nav>
 );
 
-// --- Main Component ---
 const DashboardPage = () => {
-  // --- State Hooks (Unchanged) ---
   const {
     pdfOptions,
     chatOptions,
@@ -170,7 +141,6 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const justLoggedIn = sessionStorage.getItem("justLoggedIn");
-
     if (justLoggedIn === "true") {
       sessionStorage.removeItem("justLoggedIn");
       window.location.reload();
@@ -206,7 +176,6 @@ const DashboardPage = () => {
   const { totalUploadPages, totalChatPages, paginatedUploads, paginatedChats } =
     paginatedData;
 
-  // --- Handlers (Unchanged) ---
   const handleStartNewChat = () => {
     if (!userId) return;
     const sessionId = uuidv4();
@@ -280,37 +249,31 @@ const DashboardPage = () => {
 
   return (
     <TooltipProvider delayDuration={150}>
-      {/* Main Page Wrapper */}
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-100">
-        {/* Sticky Top Navigation Bar (If any, goes here) */}
-
-        {/* Main Content Area */}
-        <div className="flex">
-          {/* Sidebar for Desktop */}
-          <aside
-            className="hidden lg:block w-64 border-r pt-20 
-          border-gray-200 bg-white p-6 sticky top-0 h-screen"
-          >
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-100 pb-20 lg:pb-0">
+        <div className="flex flex-col lg:flex-row">
+          {/* Sidebar (desktop only) */}
+          <aside className="hidden lg:block w-64 border-r border-gray-200 bg-white p-6 sticky top-0 h-screen">
             <SidebarNav />
           </aside>
 
-          {/* Content Wrapper */}
-          <main className="flex-1 p-6 md:p-10 space-y-10 mt-20">
-            {/* Quick Actions Section */}
+          {/* Main content */}
+          <main className="flex-1 p-4 sm:p-6 md:p-10 space-y-10 mt-20">
+            {/* Quick Actions */}
             <motion.section
-              // No variants needed for immediate animation, just initial/animate
               initial="hidden"
               animate="visible"
-              className="flex items-center gap-4"
+              className="flex flex-wrap items-start gap-4"
             >
-              <motion.div custom={0} variants={quickActionVariants}>
-                {" "}
-                {/* Pass index 0 */}
+              <motion.div
+                custom={0}
+                variants={quickActionVariants}
+                className="w-full sm:w-auto"
+              >
                 <Button
                   size="lg"
-                  className="w-full flex items-center justify-center gap-2 py-6 
-                  bg-blue-600 hover:bg-blue-700 shadow-lg rounded-xl text-white 
-                  font-semibold transition-all duration-300 hover:scale-[1.03]" // Added transition & hover scale
+                  className="w-full sm:w-auto sm:max-w-[300px] flex items-center justify-center gap-2 py-6
+                 bg-blue-600 hover:bg-blue-700 shadow-lg rounded-xl text-white
+                 font-semibold transition-all duration-300 hover:scale-[1.03]"
                 >
                   <Link href="/upload-pdf" className="flex items-center gap-2">
                     <Upload className="w-5 h-5" />
@@ -318,13 +281,18 @@ const DashboardPage = () => {
                   </Link>
                 </Button>
               </motion.div>
-              <motion.div custom={1} variants={quickActionVariants}>
-                {" "}
-                {/* Pass index 1 */}
+
+              <motion.div
+                custom={1}
+                variants={quickActionVariants}
+                className="w-full sm:w-auto"
+              >
                 <Button
                   size="lg"
                   onClick={handleStartNewChat}
-                  className="w-full flex items-center justify-center gap-2 py-6 bg-purple-600 hover:bg-purple-700 shadow-lg rounded-xl text-white font-semibold transition-all duration-300 hover:scale-[1.03]" // Added transition & hover scale
+                  className="w-full sm:w-auto sm:max-w-[300px] flex items-center justify-center gap-2 py-6
+                 bg-purple-600 hover:bg-purple-700 shadow-lg rounded-xl text-white
+                 font-semibold transition-all duration-300 hover:scale-[1.03]"
                 >
                   <PlusCircle className="w-5 h-5" />
                   <span>Start New Chat</span>
@@ -332,20 +300,19 @@ const DashboardPage = () => {
               </motion.div>
             </motion.section>
 
-            {/* Recent Uploads Section */}
+            {/* Recent Uploads */}
             <motion.section
               variants={sectionVariants}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }} // Trigger animation when 10% is visible
+              viewport={{ once: true, amount: 0.1 }}
             >
               <Card className="shadow-lg border border-gray-200 rounded-xl overflow-hidden bg-white/70 backdrop-blur-sm">
-                <CardHeader className="flex flex-row justify-between items-center bg-gray-50/80 p-4 border-b">
+                <CardHeader className="flex justify-between items-center p-4 bg-gray-50/80 border-b">
                   <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800">
                     <FileText className="w-5 h-5 text-blue-600" />
                     Recent Uploads
                   </CardTitle>
-                  {/* Pagination Controls - Unchanged */}
                   {totalUploadPages > 1 && (
                     <div className="flex items-center gap-1">
                       <Button
@@ -372,56 +339,51 @@ const DashboardPage = () => {
                     </div>
                   )}
                 </CardHeader>
-                <CardContent className="p-6 min-h-[200px]">
+                <CardContent className="p-4 sm:p-6 min-h-[200px]">
                   {isLoadingOptions ? (
                     <ListSkeleton />
                   ) : (
-                    <motion.ul // Use motion.ul for list container
+                    <motion.ul
                       className="space-y-4"
                       variants={listVariants}
                       initial="hidden"
-                      animate="visible" // Animate when CardContent becomes visible
+                      animate="visible"
                     >
                       {paginatedUploads.length > 0 ? (
                         paginatedUploads.map((file: PDFDocument) => {
                           const filename = file.pdfName || "";
-                          const truncatedFilename =
+                          const truncated =
                             filename.length > 50
-                              ? filename.slice(0, 50) + "..."
+                              ? filename.slice(0, 50) + "…"
                               : filename;
                           return (
-                            <motion.li // Use motion.li for list items
+                            <motion.li
                               key={file.pdfId}
-                              variants={itemVariants} // Apply item animation
-                              className="flex flex-wrap justify-between items-center gap-4 p-4 bg-white hover:bg-gray-50 rounded-xl border transition-all duration-200 hover:shadow-md hover:border-gray-300" // Added hover:shadow, hover:border, transition
+                              variants={itemVariants}
+                              className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-white hover:bg-gray-50 rounded-xl border transition-all duration-200 hover:shadow-md hover:border-gray-300"
                             >
-                              {/* Content of the list item - Unchanged */}
-                              <div className="flex items-center gap-3 overflow-hidden mr-2">
+                              <div className="flex items-center gap-3 overflow-hidden">
                                 <Tooltip>
-                                  <TooltipTrigger className="text-left">
-                                    {" "}
-                                    {/* Ensure trigger takes space */}
-                                    <span className="text-sm font-medium text-gray-800">
-                                      {truncatedFilename}
+                                  <TooltipTrigger>
+                                    <span className="text-sm font-medium text-gray-800 truncate">
+                                      {truncated}
                                     </span>
                                   </TooltipTrigger>
                                   <TooltipContent>
                                     <p className="text-xs max-w-[300px] break-words">
-                                      {truncatedFilename}
+                                      {filename}
                                     </p>
                                   </TooltipContent>
                                 </Tooltip>
                               </div>
-                              <div className="flex items-center gap-3 flex-shrink-0">
-                                {" "}
-                                {/* Prevent shrinking */}
+                              <div className="flex items-center gap-3 mt-2 sm:mt-0">
                                 <span className="text-xs text-gray-500 hidden sm:block">
                                   {formatDate(file.uploadedAt)}
                                 </span>
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="flex items-center gap-1 text-xs hover:bg-gray-100 transition-colors" // Added hover styles
+                                  className="flex items-center gap-1 text-xs hover:bg-gray-100 transition-colors"
                                 >
                                   <a
                                     href={file.pdfUrl}
@@ -438,7 +400,7 @@ const DashboardPage = () => {
                           );
                         })
                       ) : (
-                        <motion.div // Animate the empty state message
+                        <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2 }}
@@ -465,20 +427,19 @@ const DashboardPage = () => {
               </Card>
             </motion.section>
 
-            {/* Chat History Section */}
+            {/* Chat History */}
             <motion.section
               variants={sectionVariants}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }} // Trigger animation when 10% is visible
+              viewport={{ once: true, amount: 0.1 }}
             >
               <Card className="shadow-lg border border-gray-200 rounded-xl overflow-hidden bg-white/70 backdrop-blur-sm">
-                <CardHeader className="flex flex-row justify-between items-center bg-gray-50/80 p-4 border-b">
+                <CardHeader className="flex justify-between items-center p-4 bg-gray-50/80 border-b">
                   <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800">
                     <MessageSquare className="w-5 h-5 text-purple-600" />
                     Chat History
                   </CardTitle>
-                  {/* Pagination Controls - Unchanged */}
                   {totalChatPages > 1 && (
                     <div className="flex items-center gap-1">
                       <Button
@@ -505,164 +466,148 @@ const DashboardPage = () => {
                     </div>
                   )}
                 </CardHeader>
-                <CardContent className="p-6 min-h-[200px]">
+                <CardContent className="p-4 sm:p-6 min-h-[200px]">
                   {isLoadingOptions ? (
                     <ListSkeleton />
                   ) : (
-                    <motion.ul // Use motion.ul for list container
+                    <motion.ul
                       className="space-y-4"
                       variants={listVariants}
                       initial="hidden"
-                      animate="visible" // Animate when CardContent becomes visible
+                      animate="visible"
                     >
                       {paginatedChats.length > 0 ? (
                         paginatedChats.map((chat) => {
-                          const title = chat.title || "Untitled Chat"; // Provide default title
+                          const title = chat.title || "Untitled Chat";
                           const isEditing =
                             editingChatId === chat.chat_session_id;
                           return (
-                            <motion.li // Use motion.li for list items
+                            <motion.li
                               key={chat.chat_session_id}
-                              variants={itemVariants} // Apply item animation
-                              layout // Animate layout changes (like when edit mode starts/ends)
+                              variants={itemVariants}
+                              layout
                               transition={{ duration: 0.2 }}
-                              className={`p-4 bg-white rounded-xl border transition-all duration-300 ${
-                                // Increased duration
+                              className={`flex flex-col sm:flex-row justify-between p-4 bg-white rounded-xl border transition-all duration-300 ${
                                 isEditing
-                                  ? "shadow-lg ring-2 ring-indigo-300 ring-offset-2 scale-[1.01]" // Add scale on edit
-                                  : "hover:bg-gray-50 hover:shadow-md hover:border-gray-300" // Added hover effects
+                                  ? "shadow-lg ring-2 ring-indigo-300 ring-offset-2 scale-[1.01]"
+                                  : "hover:bg-gray-50 hover:shadow-md hover:border-gray-300"
                               }`}
                             >
-                              {/* Chat Item Content (with editing state) */}
-                              <div className="flex flex-wrap justify-between items-center gap-4">
-                                {/* Title / Edit Input */}
-                                <div className="flex-1 min-w-[150px] mr-2">
-                                  {" "}
-                                  {/* Add margin */}
-                                  {isEditing ? (
-                                    <div className="space-y-2">
-                                      <div className="flex items-center gap-2">
-                                        <Input
-                                          type="text"
-                                          value={editingTitle}
-                                          onChange={(e) =>
-                                            setEditingTitle(e.target.value)
-                                          }
-                                          onKeyDown={handleInputKeyDown}
-                                          className="h-9 text-sm flex-grow rounded-md"
-                                          disabled={isSavingRename}
-                                          autoFocus
-                                          aria-label="New chat title"
-                                        />
-                                        {/* Action Buttons for Edit */}
-                                        <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          className="p-1 text-red-600 hover:bg-red-100 rounded-full flex-shrink-0"
-                                          onClick={handleCancelRename}
-                                          disabled={isSavingRename}
-                                          aria-label="Cancel rename"
-                                        >
-                                          <CancelIcon className="w-4 h-4" />
-                                        </Button>
-                                        <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          className="p-1 text-green-600 hover:bg-green-100 rounded-full flex-shrink-0"
-                                          onClick={handleSaveRename}
-                                          disabled={
-                                            isSavingRename ||
-                                            !editingTitle.trim()
-                                          }
-                                          aria-label="Save rename"
-                                        >
-                                          {isSavingRename ? (
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                          ) : (
-                                            <Save className="w-4 h-4" />
-                                          )}
-                                        </Button>
-                                      </div>
-                                      {saveError && (
-                                        <p className="text-xs text-red-500">
-                                          {saveError}
+                              <div className="flex-1 min-w-[150px] mr-0 sm:mr-2">
+                                {isEditing ? (
+                                  <div className="space-y-2">
+                                    <div className="flex items-center gap-2">
+                                      <Input
+                                        type="text"
+                                        value={editingTitle}
+                                        onChange={(e) =>
+                                          setEditingTitle(e.target.value)
+                                        }
+                                        onKeyDown={handleInputKeyDown}
+                                        className="h-9 text-sm flex-grow rounded-md"
+                                        disabled={isSavingRename}
+                                        autoFocus
+                                        aria-label="New chat title"
+                                      />
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="p-1 text-red-600 hover:bg-red-100 rounded-full flex-shrink-0"
+                                        onClick={handleCancelRename}
+                                        disabled={isSavingRename}
+                                        aria-label="Cancel rename"
+                                      >
+                                        <CancelIcon className="w-4 h-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="p-1 text-green-600 hover:bg-green-100 rounded-full flex-shrink-0"
+                                        onClick={handleSaveRename}
+                                        disabled={
+                                          isSavingRename || !editingTitle.trim()
+                                        }
+                                        aria-label="Save rename"
+                                      >
+                                        {isSavingRename ? (
+                                          <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                          <Save className="w-4 h-4" />
+                                        )}
+                                      </Button>
+                                    </div>
+                                    {saveError && (
+                                      <p className="text-xs text-red-500">
+                                        {saveError}
+                                      </p>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-3 overflow-hidden">
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        {chat.latest_pdfId ? (
+                                          <FileText className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                                        ) : (
+                                          <MessageSquare className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                                        )}
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p className="text-xs">
+                                          {chat.latest_pdfId
+                                            ? "Related to a PDF"
+                                            : "General Chat Session"}
                                         </p>
-                                      )}
-                                    </div>
-                                  ) : (
-                                    // Display Title
-                                    <div className="flex items-center gap-3 overflow-hidden">
-                                      <Tooltip>
-                                        <TooltipTrigger>
-                                          {chat.latest_pdfId ? (
-                                            <FileText className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                                          ) : (
-                                            <MessageSquare className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                                          )}
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                          <p className="text-xs">
-                                            {chat.latest_pdfId
-                                              ? "Related to a PDF"
-                                              : "General Chat Session"}
-                                          </p>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                      <span className="text-sm font-medium text-gray-800 truncate">
-                                        {" "}
-                                        {/* Added truncate */}
-                                        {title} {/* Use guaranteed title */}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Action Buttons (Continue, Edit - only when not editing) */}
-                                {!isEditing && (
-                                  <div className="flex items-center gap-2 flex-shrink-0">
-                                    {" "}
-                                    {/* Prevent shrinking */}
-                                    <span className="text-xs text-gray-500 hidden md:block">
-                                      {formatDate(chat.last_activity)}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                    <span className="text-sm font-medium text-gray-800 truncate">
+                                      {title}
                                     </span>
-                                    <Button
-                                      variant="default"
-                                      size="sm"
-                                      className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-3 py-1 text-xs transition-colors" // Added transition
-                                      onClick={() => handleContinueChat(chat)}
-                                    >
-                                      <ArrowRight className="w-3 h-3" />
-                                      <span>Continue</span>
-                                    </Button>
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          className="p-1 hover:bg-gray-100 rounded-full transition-colors" // Added hover/transition
-                                        >
-                                          <MoreHorizontal className="w-4 h-4" />
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent align="end">
-                                        <DropdownMenuItem
-                                          onClick={() => handleEditStart(chat)}
-                                          className="cursor-pointer text-sm" // Added text-sm
-                                        >
-                                          <Edit3 className="mr-2 w-3.5 h-3.5" />
-                                          Rename
-                                        </DropdownMenuItem>
-                                        {/* Add Delete option here if needed */}
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
                                   </div>
                                 )}
                               </div>
+
+                              {!isEditing && (
+                                <div className="flex items-center gap-2 mt-2 sm:mt-0 flex-shrink-0">
+                                  <span className="text-xs text-gray-500 hidden md:block">
+                                    {formatDate(chat.last_activity)}
+                                  </span>
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-3 py-1 text-xs transition-colors"
+                                    onClick={() => handleContinueChat(chat)}
+                                  >
+                                    <ArrowRight className="w-3 h-3" />
+                                    <span>Continue</span>
+                                  </Button>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                      >
+                                        <MoreHorizontal className="w-4 h-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem
+                                        onClick={() => handleEditStart(chat)}
+                                        className="cursor-pointer text-sm"
+                                      >
+                                        <Edit3 className="mr-2 w-3.5 h-3.5" />
+                                        Rename
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+                              )}
                             </motion.li>
                           );
                         })
                       ) : (
-                        <motion.div // Animate the empty state message
+                        <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2 }}

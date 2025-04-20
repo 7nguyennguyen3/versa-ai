@@ -13,6 +13,7 @@ from firebase_admin import firestore
 from .verify_access import get_current_user
 from .basic_chain import generate_chat_title
 from .query_refiner import refine_user_query
+from .stream_with_indentation_fix import stream_with_indentation_fix
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
@@ -78,246 +79,226 @@ async def upsert_pdf(
 async def chat_send(
     request: Request,
     message_request: MessageRequest,
-    user_id_from_token: str = Depends(get_current_user),
+    user_id_from_token: str = Depends(get_current_user),  # Authenticated user ID
 ):
     """
     Handles sending a chat message, refining the query, processing with history,
     and initiating the streaming response via Redis Pub/Sub.
     """
+    # Unpack request
     user_message = message_request.message
     pdf_id = message_request.pdf_id
     chat_session_id = message_request.chat_session_id
-    user_id = message_request.userId  # User ID from the request body
+    user_id = message_request.userId
     model = message_request.model
+    retrieval_method = message_request.retrievalMethod
     isNewSession = message_request.isNewSession
 
     logging.info(
-        f"🚀 Received message for chat session {chat_session_id} from user {user_id}. Is new session? {isNewSession}"
+        f"🚀 Received message for chat session {chat_session_id} "
+        f"from user {user_id}. Is new session? {isNewSession}"
     )
-    logging.info(f"🚀 Original user message: {user_message}")
+    logging.info(f"🚀 Original user message: {user_message!r}")
 
-    # --- User Verification ---
-    user_exists = await verify_user(user_id)  # Assuming verify_user exists
-    if not user_exists:
+    # --- Auth check ---
+    if user_id != user_id_from_token:
+        logging.error(
+            f"Unauthorized: Token user {user_id_from_token}, " f"Request user {user_id}"
+        )
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"error": "User not found"},
+            content={"error": "Unauthorized user or user ID mismatch"},
         )
 
     # --- New Session Handling ---
+    session_manager = request.app.state.session_manager_firebase
     new_title = None
-    session_manager = (
-        request.app.state.session_manager_firebase
-    )  # Assuming session_manager is available
     if isNewSession:
-        # Generate title based on the original message
-        new_title = await generate_chat_title(
-            user_message
-        )  # Assuming generate_chat_title exists
+        new_title = await generate_chat_title(user_message)
         await session_manager.create_session(
             chat_session_id, user_id, pdf_id, initial_title="New Chat"
         )
+        # Update title in the background
         asyncio.create_task(
             session_manager.update_session_title(chat_session_id, new_title)
         )
 
-    try:
-        # --- Redis Check ---
-        redis_instance = (
-            request.app.state.redis_instance
-        )  # Assuming redis_instance is available
-        if redis_instance is None:
-            logging.error("❌ Redis instance is unavailable.")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Internal Server Error: Could not connect to Redis",
-            )
-
-        # --- Fetch and Prepare History ---
-        # Get history as list of dictionaries from session manager
-        chat_history_dicts = await session_manager.get_history(chat_session_id)
-
-        # Select recent history (e.g., last 10 messages or 1000 words)
-        word_count = 0
-        recent_history_dicts = []
-        for entry in reversed(chat_history_dicts[-10:]):
-            msg_content = entry.get("content", "")
-            words_in_msg = len(msg_content.split())
-            if word_count + words_in_msg > 1000 and len(recent_history_dicts) >= 4:
-                break
-            recent_history_dicts.append(entry)
-            word_count += words_in_msg
-        recent_history_dicts.reverse()
-
-        # Convert dict history to LangChain BaseMessage objects for refinement
-        langchain_history_for_refinement: List[BaseMessage] = []
-        for entry in recent_history_dicts:
-            role = entry.get("role")
-            content = entry.get("content", "")
-            if role == "human":
-                langchain_history_for_refinement.append(HumanMessage(content=content))
-            elif role == "ai":
-                langchain_history_for_refinement.append(AIMessage(content=content))
-        # Note: langchain_history_for_refinement does NOT include the current user_message yet
-
-        # --- Query Refinement ---
-        # Call the reusable refiner function
-        refined_query = await refine_user_query(
-            chat_history=langchain_history_for_refinement,  # History BEFORE current message
-            query=user_message,
-            logger=logging,  # Pass the FastAPI logger instance
-            # Optionally add model_name or temperature arguments if needed
-        )
-        # --- End Refinement ---
-
-        # --- Store Original User Message ---
-        # Store the ORIGINAL user message in the session history
-        await session_manager.add_message(
-            chat_session_id, user_id, pdf_id, "human", str(user_message)
+    # --- Redis Connection ---
+    redis_instance = request.app.state.redis_instance
+    if redis_instance is None:
+        logging.error("❌ Redis instance is unavailable.")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error: Could not connect to Redis",
         )
 
-        # --- Prepare History for Main Chain ---
-        # Add the current user message to the history list that will be passed to the chain
-        langchain_history_for_chain = langchain_history_for_refinement + [
-            HumanMessage(content=user_message)
-        ]
+    # --- Fetch & Prepare History ---
+    chat_history_dicts = await session_manager.get_history(chat_session_id)
+    word_count = 0
+    recent_history = []
+    for entry in reversed(chat_history_dicts):
+        if len(recent_history) >= 10 and word_count >= 1000:
+            break
+        content = entry.get("content", "")
+        wc = len(content.split())
+        if word_count + wc > 1000 and len(recent_history) >= 4:
+            break
+        recent_history.append(entry)
+        word_count += wc
+    recent_history.reverse()
 
-        # --- Create Main Retrieval Chain ---
-        # Pass history *including* the latest user message
-        # Ensure create_chain accepts List[BaseMessage] for chat_history
-        retrieval_chain = create_chain(
-            chat_history=langchain_history_for_chain,
-            user_id=user_id,
-            pdf_id=pdf_id,
-        )
+    from langchain.schema import HumanMessage, AIMessage
 
-        # --- Process AI response via Background Task ---
-        async def publish_response():
-            """Handles streaming the response and storing the AI message."""
-            BATCH_SIZE = 5
-            MAX_DELAY = 0.1
-            chunk_buffer = []
-            all_chunks: List[str] = []
-            last_send = time.time()
-            ai_response_generated = False
+    langchain_history = []
+    for entry in recent_history:
+        role = entry.get("role")
+        content = entry.get("content", "")
+        if role == "human":
+            langchain_history.append(HumanMessage(content=content))
+        elif role == "ai":
+            langchain_history.append(AIMessage(content=content))
 
-            try:
-                # Use the refined_query here when calling the chain
-                async for chunk in retrieval_chain.astream(
-                    refined_query
-                ):  # Pass refined string directly
-                    content_to_process = None
-                    # Handle different possible chunk structures (adapt as needed)
-                    if isinstance(chunk, dict):
-                        if "answer" in chunk:
-                            content_to_process = chunk["answer"]
-                        elif "content" in chunk:
-                            content_to_process = chunk["content"]
-                        elif "text" in chunk:
-                            content_to_process = chunk["text"]
-                    elif hasattr(chunk, "content"):
-                        content_to_process = chunk.content
+    # --- Query Refinement ---
+    refined_query = await refine_user_query(
+        chat_history=langchain_history,
+        query=user_message,
+        logger=logging,
+    )
 
-                    if content_to_process is not None and isinstance(
-                        content_to_process, str
-                    ):
-                        ai_response_generated = True  # Mark that we got some content
-                        chunk_buffer.append(content_to_process)
-                        all_chunks.append(content_to_process)
+    # --- Store Original User Message ---
+    await session_manager.add_message(
+        chat_session_id, user_id, pdf_id, "human", user_message
+    )
 
-                        # Send buffer if full or delay exceeded
-                        if (
-                            len(chunk_buffer) >= BATCH_SIZE
-                            or (time.time() - last_send) > MAX_DELAY
-                        ):
-                            await redis_instance.publish(
-                                f"chat:{chat_session_id}",
-                                json.dumps(
-                                    {
-                                        "type": "chunk",
-                                        "content": chunk_buffer,
-                                        "timestamp": time.time(),
-                                    }
-                                ),
-                            )
-                            chunk_buffer = []
-                            last_send = time.time()
+    # --- Prepare History for Chain ---
+    langchain_history_for_chain = langchain_history + [
+        HumanMessage(content=user_message)
+    ]
 
-                # Send remaining chunks
-                if chunk_buffer:
-                    await redis_instance.publish(
-                        f"chat:{chat_session_id}",
-                        json.dumps(
-                            {
-                                "type": "chunk",
-                                "content": chunk_buffer,
-                                "timestamp": time.time(),
-                            }
-                        ),
+    # --- Create Main Retrieval Chain ---
+    retrieval_chain = create_chain(
+        chat_history=langchain_history_for_chain,
+        user_id=user_id,
+        pdf_id=pdf_id,
+        preferred_model=model,
+        mode=retrieval_method,
+        isNewSession=isNewSession,
+    )
+
+    # --- Background Task: Stream & Store AI Response ---
+    async def publish_response():
+        BATCH_SIZE = 5
+        MAX_DELAY = 0.1
+        chunk_buffer = []
+        all_processed = []
+        original_chunks = []
+        last_send = time.time()
+        generated = False
+
+        try:
+            async for orig_chunk, proc_item in stream_with_indentation_fix(
+                retrieval_chain.astream(refined_query)
+            ):
+                # Extract original text
+                if isinstance(orig_chunk, dict):
+                    text = (
+                        orig_chunk.get("answer")
+                        or orig_chunk.get("content")
+                        or orig_chunk.get("text")
                     )
+                elif hasattr(orig_chunk, "content"):
+                    text = orig_chunk.content
+                else:
+                    text = orig_chunk if isinstance(orig_chunk, str) else None
 
-                # Publish completion event
+                if text:
+                    original_chunks.append(text)
+
+                if isinstance(proc_item, str):
+                    generated = True
+                    chunk_buffer.append(proc_item)
+                    all_processed.append(proc_item)
+
+                    if (
+                        len(chunk_buffer) >= BATCH_SIZE
+                        or (time.time() - last_send) > MAX_DELAY
+                    ):
+                        await redis_instance.publish(
+                            f"chat:{chat_session_id}",
+                            json.dumps(
+                                {
+                                    "type": "chunk",
+                                    "content": chunk_buffer,
+                                    "timestamp": time.time(),
+                                }
+                            ),
+                        )
+                        chunk_buffer = []
+                        last_send = time.time()
+                # ignore non-str items for now
+
+        except Exception as stream_err:
+            logging.exception(
+                f"❌ Error streaming response for session {chat_session_id}: {stream_err}"
+            )
+            # Notify frontend of error
+            try:
                 await redis_instance.publish(
                     f"chat:{chat_session_id}",
-                    json.dumps({"type": "complete", "timestamp": time.time()}),
+                    json.dumps(
+                        {
+                            "type": "error",
+                            "content": f"Error processing response: {stream_err}",
+                            "timestamp": time.time(),
+                        }
+                    ),
                 )
+            except Exception as pub_err:
+                logging.error(f"❌ Failed publishing error event: {pub_err}")
+            return  # abort further processing
 
-                # Store the full AI response in session history if content was generated
-                if ai_response_generated:
-                    full_response = "".join(all_chunks)
-                    await session_manager.add_message(
-                        chat_session_id, user_id, pdf_id, "ai", full_response
-                    )
-                    logging.info(
-                        f"Full AI Response stored for session {chat_session_id}"
-                    )
-                else:
-                    logging.warning(
-                        f"No AI content generated for session {chat_session_id}, AI message not stored."
-                    )
+        # Flush remaining chunks
+        if chunk_buffer:
+            await redis_instance.publish(
+                f"chat:{chat_session_id}",
+                json.dumps(
+                    {
+                        "type": "chunk",
+                        "content": chunk_buffer,
+                        "timestamp": time.time(),
+                    }
+                ),
+            )
 
-            except Exception as e:
-                logging.exception(
-                    f"❌ Error during AI response streaming/storage for session {chat_session_id}: {e}"
-                )
-                # Optionally publish an error event to Redis
-                try:
-                    await redis_instance.publish(
-                        f"chat:{chat_session_id}",
-                        json.dumps(
-                            {
-                                "type": "error",
-                                "content": "Error processing response.",
-                                "timestamp": time.time(),
-                            }
-                        ),
-                    )
-                except Exception as pub_e:
-                    logging.error(
-                        f"❌ Failed to publish error event to Redis for session {chat_session_id}: {pub_e}"
-                    )
-
-        # Start the background task
-        asyncio.create_task(publish_response())
-
-    except Exception as e:
-        logging.exception(
-            f"❌ Error processing message for session {chat_session_id}: {e}"
-        )
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"error": "Internal Server Error"},
+        # Signal completion
+        await redis_instance.publish(
+            f"chat:{chat_session_id}",
+            json.dumps({"type": "complete", "timestamp": time.time()}),
         )
 
-    # --- Send Initial Response ---
-    response_content = {"status": "Message processing started"}
+        # Store full AI response
+        if generated:
+            full = "".join(original_chunks)
+            await session_manager.add_message(
+                chat_session_id, user_id, pdf_id, "ai", full
+            )
+            logging.info(f"Full AI response stored for session {chat_session_id}")
+        else:
+            logging.warning(f"No AI content generated for session {chat_session_id}")
+
+    # Kick off streaming in background
+    asyncio.create_task(publish_response())
+
+    # --- Initial HTTP Response ---
+    response_payload = {"status": "Message processing started"}
     if isNewSession and new_title:
-        response_content["status"] = (
-            "New chat session created, title generation started"
+        response_payload.update(
+            {
+                "status": "New chat session created, title generation started",
+                "new_title": new_title,
+            }
         )
-        response_content["new_title"] = new_title
-
-    return JSONResponse(status_code=status.HTTP_200_OK, content=response_content)
+    return JSONResponse(status_code=status.HTTP_200_OK, content=response_payload)
 
 
 @router.get("/chat_stream/{chat_session_id}")

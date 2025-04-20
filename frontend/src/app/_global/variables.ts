@@ -296,11 +296,11 @@ export const APP_ROADMAP: RoadmapProps[] = [
   },
   {
     devName: "Chatbot responding with citations and page numbers from PDF",
-    status: "In Progress",
+    status: "Completed",
     description:
       "Agent replies with citations and page numbers from PDF for credibility",
     startDate: new Date("04/15/2025"),
-    endDate: new Date(),
+    endDate: new Date("04/19/2025"),
     comments: "Not Needed",
     priority: "High",
   },
@@ -467,13 +467,6 @@ export const RETRIEVAL_OPTIONS = [
 
 export const publicPdfs: PDFDocument[] = [
   {
-    pdfId: "cod-pdf",
-    pdfUrl: `${process.env.NEXT_PUBLIC_COD_PDF}`,
-    pdfName: "Cod",
-    uploadedAt: new Date(),
-    pdfIngestionStatus: "success",
-  },
-  {
     pdfId: "bitcoin-pdf",
     pdfUrl: `${process.env.NEXT_PUBLIC_BITCOIN_PDF}`,
     pdfName: "Bitcoin",
@@ -481,9 +474,38 @@ export const publicPdfs: PDFDocument[] = [
     pdfIngestionStatus: "success",
   },
   {
+    pdfId: "hyperloop-pdf",
+    pdfUrl: `${process.env.NEXT_PUBLIC_HYPERLOOP_PDF}`,
+    pdfName: "Hyperloop",
+    uploadedAt: new Date(),
+    pdfIngestionStatus: "success",
+  },
+  {
+    pdfId: "nuclear_fusion-pdf",
+    pdfUrl: `${process.env.NEXT_PUBLIC_NUCLEAR_FUSION_PDF}`,
+    pdfName: "Nuclear Fusion",
+    uploadedAt: new Date(),
+    pdfIngestionStatus: "success",
+  },
+
+  {
+    pdfId: "electric_car-pdf",
+    pdfUrl: `${process.env.NEXT_PUBLIC_ELECTRIC_CAR_PDF}`,
+    pdfName: "Electric Car",
+    uploadedAt: new Date(),
+    pdfIngestionStatus: "success",
+  },
+  {
     pdfId: "theory_of_relativity-pdf",
     pdfUrl: `${process.env.NEXT_PUBLIC_TOR_PDF}`,
     pdfName: "Theory of Relativity",
+    uploadedAt: new Date(),
+    pdfIngestionStatus: "success",
+  },
+  {
+    pdfId: "cod-pdf",
+    pdfUrl: `${process.env.NEXT_PUBLIC_COD_PDF}`,
+    pdfName: "Cod",
     uploadedAt: new Date(),
     pdfIngestionStatus: "success",
   },
