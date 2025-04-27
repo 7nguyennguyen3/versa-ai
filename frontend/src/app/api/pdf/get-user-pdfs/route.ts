@@ -24,11 +24,12 @@ export async function POST(request: NextRequest) {
       pdfUrl: doc.data().pdfUrl,
       uploadedAt: doc.data().uploadedAt,
       pdfName: doc.data().pdfName,
+      summary: doc.data().summary ?? "No Summary Available",
     }));
 
     // Include cacheBuster in the response
     const response = NextResponse.json({ pdfs, cacheBuster });
-    response.headers.set("Cache-Control", "public, s-maxage=360000"); // 100 hours
+    response.headers.set("Cache-Control", "public, s-maxage=360000");
     return response;
   } catch (error) {
     console.error("Error retrieving PDFs:", error);

@@ -56,7 +56,7 @@ const defaultComponents: Options["components"] = {
   h1: ({ className, node, ...props }) => (
     <h1
       className={cn(
-        "mb-6 mt-8 scroll-m-20 text-4xl font-extrabold tracking-tight first:mt-0 last:mb-0",
+        "ml-3 mb-6 mt-8 scroll-m-20 text-4xl font-extrabold tracking-tight first:mt-0 last:mb-0",
         className
       )}
       {...props}
@@ -65,7 +65,7 @@ const defaultComponents: Options["components"] = {
   h2: ({ className, node, ...props }) => (
     <h2
       className={cn(
-        "mb-4 mt-8 scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0 last:mb-0",
+        "ml-3 mb-4 mt-8 scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0 last:mb-0",
         className
       )}
       {...props}
@@ -74,7 +74,7 @@ const defaultComponents: Options["components"] = {
   h3: ({ className, node, ...props }) => (
     <h3
       className={cn(
-        "mb-4 mt-6 scroll-m-20 text-2xl font-semibold tracking-tight first:mt-0 last:mb-0",
+        "ml-3 mb-4 mt-6 scroll-m-20 text-2xl font-semibold tracking-tight first:mt-0 last:mb-0",
         className
       )}
       {...props}
@@ -83,7 +83,7 @@ const defaultComponents: Options["components"] = {
   h4: ({ className, node, ...props }) => (
     <h4
       className={cn(
-        "mb-4 mt-6 scroll-m-20 text-xl font-semibold tracking-tight first:mt-0 last:mb-0",
+        "ml-3 mb-4 mt-6 scroll-m-20 text-xl font-semibold tracking-tight first:mt-0 last:mb-0",
         className
       )}
       {...props}
@@ -92,7 +92,7 @@ const defaultComponents: Options["components"] = {
   h5: ({ className, node, ...props }) => (
     <h5
       className={cn(
-        "my-4 text-lg font-semibold first:mt-0 last:mb-0",
+        "ml-3 my-4 text-lg font-semibold first:mt-0 last:mb-0",
         className
       )}
       {...props}
@@ -101,7 +101,7 @@ const defaultComponents: Options["components"] = {
   h6: ({ className, node, ...props }) => (
     <h6
       className={cn(
-        "my-4 text-base font-semibold first:mt-0 last:mb-0",
+        "ml-3 my-4 text-base font-semibold first:mt-0 last:mb-0",
         className
       )}
       {...props}

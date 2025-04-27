@@ -1,4 +1,3 @@
-import React, { useRef, useEffect, Dispatch, SetStateAction } from "react"; // Import necessary hooks
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -32,10 +31,14 @@ import {
   MessageSquare,
   PlusCircleIcon,
   Settings,
+  Text,
   XCircle,
 } from "lucide-react";
-import { PDFDocument, ChatSession } from "../../_global/interface"; // Import necessary types
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react"; // Import necessary hooks
+import { ChatSession, PDFDocument } from "../../_global/interface"; // Import necessary types
 import { MODEL_OPTIONS, RETRIEVAL_OPTIONS } from "../../_global/variables"; // Import options
+import { useAppStore } from "@/app/_store/useAppStore";
+import { cn } from "@/lib/utils";
 
 // Corrected props needed for the ChatInputArea component
 interface ChatInputAreaProps {
@@ -108,6 +111,13 @@ const ChatInputArea: React.FC<ChatInputAreaProps> = ({
     }
   }, [message, textareaRef]); // Depend on message and the ref
 
+  const {
+    setToggleSummaryMode,
+    toggleSummaryMode,
+    setOpenSummary,
+    openSummary,
+  } = useAppStore();
+
   return (
     <div className="w-full px-4 pb-4 pt-2 bg-gradient-to-t from-slate-100/90 via-slate-50/70 to-transparent backdrop-blur-sm">
       <div className="max-w-3xl mx-auto">
@@ -124,8 +134,10 @@ const ChatInputArea: React.FC<ChatInputAreaProps> = ({
             className="w-full p-2 focus:outline-none text-sm md:text-base bg-transparent resize-none border-none overflow-y-auto custom-scrollbar"
             placeholder={
               selectedPdf
-                ? `Ask a question about ${selectedPdf.pdfName}...`
-                : "Select a PDF using Settings (⚙️) to begin..."
+                ? toggleSummaryMode
+                  ? `Only accept specific questions, visit slide 6 of tutorial for more info`
+                  : `Ask a question about ${selectedPdf.pdfName}…`
+                : "Select a PDF using Settings (⚙️) to begin…"
             }
             value={message}
             rows={1}
@@ -173,26 +185,6 @@ const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <TooltipProvider delayDuration={100}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={handleDemoNewChatClick}
-                          className="text-black hover:text-blue-600 h-8 w-8"
-                          aria-label="Start New Demo Chat Context"
-                        >
-                          <PlusCircleIcon className="scale-125" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">
-                        <p>Clear Chat</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  {/* Tutorial button is now handled in EmptyChatState and potentially elsewhere */}
-                  {/* Removed the duplicate Tutorial button here */}
                 </>
               ) : (
                 // --- Authenticated User Settings (PDF, Chat, Model, Retrieval) ---
@@ -207,18 +199,52 @@ const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                       <Settings className="scale-125" />
                     </Button>
                   </DropdownMenuTrigger>
-                  {/* --- Authenticated Settings Content --- */}
-                  {/* This content is complex and could be extracted further later */}
                   <DropdownMenuContent
                     align="start"
                     sideOffset={8}
-                    className="w-72 p-4 bg-white shadow-lg rounded-lg border border-gray-200 space-y-4"
+                    className={cn(
+                      openSummary ? "w-[90vw] max-w-[360px]" : "w-72",
+                      "p-4 bg-white shadow-lg rounded-lg border border-gray-200 space-y-4"
+                    )}
                   >
+                    {openSummary && selectedPdf && (
+                      <div className="flex flex-col gap-1 overflow-y-auto max-h-[120px]">
+                        <p className="text-sm font-semibold">Short Summary:</p>
+                        <p className="text-[13px]/5 font-medium">
+                          {selectedPdf.summary}
+                        </p>
+                      </div>
+                    )}
+
                     {/* PDF Selection Section */}
                     <div className="space-y-2">
-                      <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-gray-500" />
-                        Document
+                      <h3
+                        className="w-full text-sm font-medium text-gray-700 flex 
+                      items-center justify-between gap-2"
+                      >
+                        <span className="flex gap-2">
+                          <FileText className="w-4 h-4 text-gray-500" />
+                          Document
+                        </span>
+                        {selectedPdf && selectedPdf.summary && (
+                          <TooltipProvider delayDuration={100}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="icon"
+                                  onClick={() => setOpenSummary(!openSummary)}
+                                  className="text-white hover:text-blue-600 h-6 w-6 rounded-full"
+                                  aria-label="View Short Summary"
+                                >
+                                  <Text className="scale-110" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top">
+                                <p>Toggle Short Summary</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                       </h3>
                       <Select
                         onValueChange={handleAuthPdfSelection}
@@ -291,7 +317,9 @@ const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                       </Select>
                     </div>
 
-                    <DropdownMenuSeparator className="bg-gray-100" />
+                    {selectedPdf && selectedPdf.summary && (
+                      <DropdownMenuSeparator className="bg-gray-100" />
+                    )}
 
                     {/* Chat History Section */}
                     <div className="space-y-2">
@@ -461,6 +489,36 @@ const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+
+              {!isDemo && (
+                <TooltipProvider delayDuration={100}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          if (!localStorage.getItem("summary-tutorial")) {
+                            localStorage.setItem("summary-tutorial", "true");
+                          }
+                          setToggleSummaryMode(!toggleSummaryMode);
+                        }}
+                        className={cn(
+                          "h-8 w-8 text-black hover:text-blue-600 transition-colors duration-150",
+                          toggleSummaryMode && "bg-primary/80 text-white"
+                        )}
+                        aria-label="Toggle Summary Mode"
+                      >
+                        <Text className="scale-125" />
+                      </Button>
+                    </TooltipTrigger>
+
+                    <TooltipContent side="top">
+                      <p>Summary Mode</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
 
               {/* PDF View Toggle Button */}
               <TooltipProvider delayDuration={100}>

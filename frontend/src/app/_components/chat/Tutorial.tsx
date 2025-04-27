@@ -1,336 +1,372 @@
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button"; // Adjust path as needed
-import { X, Settings, PlusCircleIcon, Lightbulb, FileText } from "lucide-react"; // Import icons you'll use
+import React, { useState, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Settings,
+  PlusCircleIcon,
+  Lightbulb,
+  FileText,
+  Text,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+} from "lucide-react";
 
-interface TutorialPage {
-  title: string;
-  content: React.ReactNode;
-}
+// --- Tutorial Content Definition ---
+// Standardize inline icon size and alignment class
+const iconSize = 16; // e.g., 16px
+const iconClass = "inline-block align-middle mx-1"; // Use align-middle or align-text-bottom
+
+const tutorialPages = [
+  // --- Page 1: Welcome ---
+  {
+    title: "Welcome to the Demo!",
+    content: (
+      <>
+        <p className="mb-4">
+          This demo allows you to interact with a PDF document using AI. Chat
+          with the document to ask questions and get information based on its
+          content.
+        </p>
+        <p>
+          Let&apos;s quickly go over the key features you&apos;ll find in the
+          toolbar.
+        </p>
+      </>
+    ),
+  },
+  // --- Page 2: Toolbar Overview ---
+  {
+    title: "Toolbar Overview",
+    content: (
+      <>
+        <p className="mb-4">
+          Look at the row of icons near the top right. These give you control:
+        </p>
+        {/* Use flex with items-center for vertical centering in list items */}
+        <ul className="space-y-3">
+          <li className="flex items-center gap-2">
+            <Settings size={iconSize + 2} className="text-primary shrink-0" />{" "}
+            {/* Slightly larger icon maybe */}
+            <span>Change PDF, Conversation, AI Model, Retrieval method.</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <PlusCircleIcon
+              size={iconSize + 2}
+              className="text-primary shrink-0"
+            />
+            <span>Start a new conversation.</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <Lightbulb size={iconSize + 2} className="text-primary shrink-0" />
+            <span>Reopen this guide.</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <Text size={iconSize + 2} className="text-primary shrink-0" />
+            <span>Toggle Summary Mode</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <FileText size={iconSize + 2} className="text-primary shrink-0" />
+            <span>Toggle PDF view (or press `Esc`).</span>
+          </li>
+        </ul>
+      </>
+    ),
+  },
+  // --- Page 3: Settings Menu ---
+  {
+    title: "The Settings Menu",
+    content: (
+      <>
+        {/* Apply alignment class to inline icons */}
+        <p className="mb-4">
+          Click the{" "}
+          <Settings size={iconSize} className={iconClass + " text-primary"} />
+          icon to open the settings.
+        </p>
+        <p className="mb-2 font-medium">Here you can:</p>
+        <ul className="list-disc list-outside space-y-1.5 pl-5">
+          <li>Select a different Demo PDF.</li>
+          <li>Switch between conversations.</li>
+          <li>Choose the AI Model (e.g., Gemini, GPT).</li>
+          <li>Select the Retrieval Method.</li>
+        </ul>
+      </>
+    ),
+  },
+  // --- Page 4: Understanding Citations ---
+  // (Content remains largely the same, ensure styling is consistent)
+  {
+    title: "Understanding Citations",
+    content: (
+      <>
+        <p className="mb-4">
+          AI answers often include citations linking to the source in the PDF:
+        </p>
+        <Alert
+          variant="default"
+          className="mb-4 bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800"
+        >
+          <AlertTitle className="text-blue-800 dark:text-blue-300">
+            Example Citation
+          </AlertTitle>
+          <AlertDescription className="text-center font-mono text-blue-700 dark:text-blue-400 !pl-0">
+            (p.7, 1/2)
+          </AlertDescription>
+        </Alert>
+        <Alert
+          variant="default"
+          className="mb-4 border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/30"
+        >
+          <AlertTitle className="text-yellow-800 dark:text-yellow-300">
+            How to Read Citations
+          </AlertTitle>
+          <AlertDescription className="text-yellow-700 dark:text-yellow-400 !pl-0">
+            <ul className="list-disc list-outside space-y-2 pl-5 mt-2">
+              <li>
+                <code>p.X</code>: Page number (e.g., <code>p.7</code> = Page 7).
+              </li>
+              <li>
+                <code>Y/Z</code>: Vertical section. Page divided into{" "}
+                <code>Z</code> parts, <code>Y</code> is the part from the top
+                (e.g., <code>1/2</code> = top half).
+              </li>
+              <li>
+                Multiple sections like <code>(p.9, 1/4, 2/4)</code> mean info
+                spans the top two quarters of page 9.
+              </li>
+            </ul>
+          </AlertDescription>
+        </Alert>
+        <p>Citations help you verify answers and find the source quickly!</p>
+      </>
+    ),
+  },
+  // --- Page 5: Managing Chat ---
+  {
+    title: "Managing Your Chat",
+    content: (
+      <>
+        {/* Apply alignment class to inline icons */}
+        <p className="mb-4">
+          Use the{" "}
+          <PlusCircleIcon
+            size={iconSize}
+            className={iconClass + " text-primary"}
+          />
+          button to start a fresh chat, clearing the current conversation.
+        </p>
+        <p className="mb-4">
+          This is useful for switching topics or if the chat feels off track.
+        </p>
+        <p>
+          Toggle the{" "}
+          <FileText size={iconSize} className={iconClass + " text-primary"} />
+          Document View to see the PDF alongside the chat.
+        </p>
+      </>
+    ),
+  },
+  // --- Page 6: Summary Mode ---
+  {
+    title: "Summary Mode",
+    content: (
+      <>
+        {/* Apply alignment class to inline icons */}
+        <p className="mb-2">
+          {" "}
+          {/* Reduced margin slightly */}
+          Toggle{" "}
+          <Text size={iconSize} className={iconClass + " text-primary"} />
+          Summary Mode to enable document summarization commands.
+        </p>
+
+        {/* NEW: Explanation of summary types */}
+        <span className="mb-4 text-muted-foreground ">
+          You can ask for summaries covering:
+          <ul className="list-disc list-outside pl-5 mt-1 space-y-0.5">
+            <li>The entire document</li>
+            <li>A single page</li>
+            <li>A range of pages (e.g., pages 2-5)</li>
+            <li>Specific, non-consecutive pages (e.g., pages 1, 3, 8)</li>
+          </ul>
+        </span>
+
+        {/* Examples section */}
+        <p className="mb-2 font-medium">Examples:</p>
+        <div className="space-y-1.5 rounded-md border bg-muted p-3 dark:bg-muted/50">
+          {/* Examples map directly to the types above */}
+          <code className="block text-sm">Summarize this document</code>
+          <code className="block text-sm">Summarize page 5</code>
+          <code className="block text-sm">Summarize pages 1-3</code>
+          <code className="block text-sm">Summarize pages 1, 4, 7</code>
+        </div>
+
+        {/* Note remains the same */}
+        <p className="mt-4 text-muted-foreground text-xs">
+          Note: Topic-based summaries are not yet supported.
+        </p>
+      </>
+    ),
+  },
+  // --- Page 7: Reminder ---
+  {
+    title: "Need a Reminder?",
+    content: (
+      <>
+        {/* Apply alignment class to inline icons */}
+        <p className="mb-4">
+          Forget something? Click the
+          <Lightbulb size={iconSize} className={iconClass + " text-primary"} />
+          icon anytime to reopen this guide.
+        </p>
+        <p className="font-medium">
+          You&apos;re all set! Happy chatting with your PDF!
+        </p>
+      </>
+    ),
+  },
+];
 
 interface TutorialProps {
+  isOpen: boolean;
   setOpenTutorial: (open: boolean) => void;
 }
 
-const Tutorial: React.FC<TutorialProps> = ({ setOpenTutorial }) => {
+const Tutorial: React.FC<TutorialProps> = ({ isOpen, setOpenTutorial }) => {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
-
-  // Define the content for each tutorial page
-  const tutorialPages: TutorialPage[] = [
-    {
-      title: "Welcome to the Demo!",
-      content: (
-        <>
-          <p className="mb-4">
-            {" "}
-            {/* Removed text-muted-foreground */}
-            This demo allows you to interact with a PDF document using AI. Chat
-            with the document to ask questions and get information based on its
-            content.
-          </p>
-          <p>
-            {" "}
-            {/* Removed text-muted-foreground, mb-4 added to next paragraph if needed */}
-            Let&apos;s quickly go over the key features you&apos;ll find in the
-            toolbar at the bottom left of the chat interface.
-          </p>
-        </>
-      ),
-    },
-    {
-      title: "Toolbar Overview",
-      content: (
-        <>
-          <p className="mb-4">
-            {" "}
-            {/* Removed text-muted-foreground */}
-            Look at the row of icons near the top right. These icons give you
-            control over the demo experience:
-          </p>
-          <ul className="list-disc list-inside space-y-2 pl-2">
-            {" "}
-            {/* Removed text-muted-foreground, text-sm */}
-            <li>
-              <Settings
-                size={16}
-                className="inline-block mr-1 align-text-bottom"
-              />{" "}
-              Select to change the current PDF, Conversation, AI Model, and
-              Retrieval method.
-            </li>
-            <li>
-              <PlusCircleIcon
-                size={16}
-                className="inline-block mr-1 align-text-bottom"
-              />{" "}
-              Select to start a new conversation.
-            </li>
-            <li>
-              <Lightbulb
-                size={16}
-                className="inline-block mr-1 align-text-bottom"
-              />{" "}
-              Select to reopen this guide.
-            </li>
-            {/* Assuming you have a document icon button */}
-            <li>
-              <FileText
-                size={16}
-                className="inline-block mr-1 align-text-bottom"
-              />{" "}
-              Open PDF view, press `Esc` to quickly open it.
-            </li>
-          </ul>
-          <p className="mt-4">
-            {" "}
-            {/* Removed text-muted-foreground, text-sm */}
-            We&apos;ll cover each in more detail.
-          </p>
-        </>
-      ),
-    },
-    {
-      title: "The Settings Menu",
-      content: (
-        <>
-          <p className="mb-4">
-            {" "}
-            {/* Removed text-muted-foreground, text-sm */}
-            Click the{" "}
-            <Settings
-              size={16}
-              className="inline-block mx-1 align-text-bottom"
-            />{" "}
-            Settings icon to open a dropdown menu.
-          </p>
-          <p className="mb-4">Here you can:</p>{" "}
-          {/* Removed text-muted-foreground, text-sm */}
-          <ul className="list-disc list-inside space-y-2 pl-2">
-            {" "}
-            {/* Removed text-muted-foreground, text-sm */}
-            <li>Select a different Demo PDF to chat with.</li>
-            <li>Select a different conversation to chat with.</li>
-            <li>
-              Choose the AI Model powering the responses (e.g., Gemini, GPT,
-              etc.).
-            </li>
-            <li>
-              Select the Retrieval Method (how the AI finds relevant information
-              in the PDF).
-            </li>
-          </ul>
-        </>
-      ),
-    },
-    {
-      title: "Understanding Citations",
-      content: (
-        <>
-          <p className="mb-4">
-            When the AI provides information directly from the document, it will
-            often include a citation like this:
-          </p>
-          <p className="mb-4 p-3 bg-blue-100 border border-blue-300 text-blue-800 rounded-md text-center font-mono">
-            (p.7, 1/2)
-          </p>
-          <p className="mb-4">
-            This citation tells you exactly where in the PDF the information
-            came from.
-          </p>
-          <div className="mb-4 p-3 bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md">
-            <strong className="block text-yellow-900 mb-2">
-              Understanding the Parts:
-            </strong>
-            <ul className="list-disc list-inside space-y-2">
-              <li>
-                <code>p.X</code>: This is the page number in the document (e.g.,{" "}
-                <code>p.7</code> means Page 7).
-              </li>
-              <li>
-                <code>Y/Z</code>: This indicates which vertical section of the
-                page the information is located in. The page is divided into{" "}
-                <code>Z</code> equal vertical parts, and <code>Y</code> is the
-                specific part containing the cited text, counting from the top.
-              </li>
-            </ul>
-            <strong className="block text-yellow-900 mt-4 mb-2">
-              Examples:
-            </strong>
-            <ul className="list-disc list-inside space-y-2">
-              <li>
-                <code>(p.7, 1/2)</code>: Information is from Page 7, the top
-                half (1st of 2 vertical sections).
-              </li>
-              <li>
-                <code>(p.8, 2/2)</code>: Information is from Page 8, the bottom
-                half (2nd of 2 vertical sections).
-              </li>
-              <li>
-                <code>(p.9, 1/4, 2/4)</code>: Information is from Page 9, the
-                top and second quarter of the page. (1st of 3 vertical
-                sections).
-              </li>
-            </ul>
-          </div>
-          <p className="mt-4">
-            Paying attention to citations helps you verify the AI&apos;s answers
-            and find the source text quickly!
-          </p>
-        </>
-      ),
-    },
-    {
-      title: "Managing Your Chat",
-      content: (
-        <>
-          <p className="mb-4">
-            {" "}
-            {/* Removed text-muted-foreground, text-sm */}
-            The{" "}
-            <PlusCircleIcon
-              size={16}
-              className="inline-block mx-1 align-text-bottom"
-            />{" "}
-            New Chat button is essential.
-          </p>
-          <p className="mb-4">
-            {" "}
-            {/* Removed text-muted-foreground, text-sm */}
-            Clicking it will clear the current conversation. This starts a fresh
-            chat session with no memory of previous questions and answers. Use
-            this if you want to switch topics or feel the conversation is going
-            off track.
-          </p>
-          {/* Assuming you have a document icon button */}
-          <p className="mt-4">
-            {" "}
-            {/* Removed text-muted-foreground, text-sm */}
-            You can also toggle the PDF viewer using the{" "}
-            <FileText
-              size={16}
-              className="inline-block mx-1 align-text-bottom"
-            />{" "}
-            Document View icon (if available) to see the document alongside the
-            chat.
-          </p>
-        </>
-      ),
-    },
-    {
-      title: "Need a Reminder?",
-      content: (
-        <>
-          <p className="mb-4">
-            {" "}
-            {/* Removed text-muted-foreground, text-sm */}
-            If you forget what the icons do or how the demo works, just click
-            the{" "}
-            <Lightbulb
-              size={16}
-              className="inline-block mx-1 align-text-bottom"
-            />{" "}
-            Open Tutorial lightbulb icon again to bring this guide back up!
-          </p>
-          <p>
-            {" "}
-            {/* Removed text-muted-foreground, text-sm */}
-            That&apos;s it! You&apos;re ready to start chatting with the PDF.
-            Have fun exploring!
-          </p>
-        </>
-      ),
-    },
-  ];
-
   const totalPages = tutorialPages.length;
-  const isFirstPage = currentPageIndex === 0;
   const isLastPage = currentPageIndex === totalPages - 1;
+  const isFirstPage = currentPageIndex === 0;
 
-  const handleNextPage = () => {
+  // --- Navigation Handlers (useCallback for performance) ---
+  const handleNextPage = useCallback(() => {
     if (!isLastPage) {
       setCurrentPageIndex((prevIndex) => prevIndex + 1);
     }
-  };
+  }, [isLastPage]);
 
-  const handlePrevPage = () => {
+  const handlePrevPage = useCallback(() => {
     if (!isFirstPage) {
       setCurrentPageIndex((prevIndex) => prevIndex - 1);
     }
-  };
+  }, [isFirstPage]);
 
-  const handleCloseTutorial = () => {
+  const handleGoToPage = useCallback(
+    (index: number) => {
+      if (index >= 0 && index < totalPages) {
+        setCurrentPageIndex(index);
+      }
+    },
+    [totalPages]
+  );
+
+  const handleClose = useCallback(() => {
     setOpenTutorial(false);
-  };
+  }, [setOpenTutorial]);
+
+  // --- Keyboard Navigation ---
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isOpen) return;
+      if (event.key === "ArrowRight") handleNextPage();
+      else if (event.key === "ArrowLeft") handlePrevPage();
+      // Allow Dialog default Escape behavior
+      // else if (event.key === 'Escape') handleClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, handleNextPage, handlePrevPage]); // Removed handleClose dependency as Dialog handles ESC
+
+  // --- Reset page index when modal re-opens ---
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentPageIndex(0);
+    }
+  }, [isOpen]);
 
   const currentPage = tutorialPages[currentPageIndex];
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-in fade-in-0"
-        onClick={handleCloseTutorial} // Close on backdrop click
-        aria-hidden="true"
-      />
-
-      {/* Modal Container */}
-      {/* Added role="dialog" and aria-modal="true" for accessibility */}
-      <div
-        role="dialog"
-        aria-modal="true"
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] 
-        w-full max-w-md p-6 bg-card text-card-foreground rounded-lg shadow-xl 
-        border animate-in fade-in-0 zoom-in-95 duration-300 h-[420px]"
+    <Dialog open={isOpen} onOpenChange={setOpenTutorial}>
+      <DialogContent
+        className="sm:max-w-lg flex flex-col" // Removed max-h here, height is controlled by content div
+        onEscapeKeyDown={handleClose} // Ensure Dialog handles Esc
+        // onPointerDownOutside={(e) => e.preventDefault()} // Uncomment to prevent closing on outside click
       >
-        <div className="relative flex flex-col h-full">
-          {/* Close Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleCloseTutorial}
-            className="absolute top-0 right-0 h-6 w-6 rounded-full text-muted-foreground 
-            hover:text-foreground bg-orange-300 text-white"
-            aria-label="Close tutorial"
-          >
-            <X className="scale-110" />
-          </Button>
+        <DialogHeader>
+          {/* Added pr-12 to prevent title overlapping with close button */}
+          <DialogTitle className="text-center text-xl sm:text-2xl pr-12">
+            {currentPage.title}
+          </DialogTitle>
+        </DialogHeader>
 
-          <div className="mb-6 pr-6 overflow-y-auto min-h-[300px] max-h-[400px] text-foreground text-sm">
-            {" "}
-            {/* Added min-h and max-h, applied text styles */}
-            <h2 className="text-xl font-semibold mb-4 text-center pr-6 text-foreground">
-              {/* Ensured title is foreground color */}
-              {currentPage.title}
-            </h2>
-            {currentPage.content}
-          </div>
-
-          {/* Navigation (Fixed at bottom) */}
-          <div className="flex items-center justify-between border-t pt-4 mt-auto">
-            <Button
-              variant="outline"
-              onClick={handlePrevPage}
-              disabled={isFirstPage}
-              size="sm"
-            >
-              Previous
-            </Button>
-
-            {/* Page Indicator */}
-            <div className="text-sm text-muted-foreground">
-              Page {currentPageIndex + 1} of {totalPages}
-            </div>
-
-            <Button
-              variant="outline"
-              onClick={isLastPage ? handleCloseTutorial : handleNextPage}
-              size="sm"
-            >
-              {isLastPage ? "Done" : "Next"}
-            </Button>
-          </div>
+        {/* Content Area: FIXED HEIGHT and SCROLLABLE */}
+        <div
+          className="px-6 py-4 text-sm sm:text-base text-foreground/90 space-y-4
+        h-[200px] xs:h-[320px] overflow-y-auto"
+        >
+          {currentPage.content}
         </div>
-      </div>
-    </>
+
+        {/* Footer with Navigation and Progress */}
+        <DialogFooter className="flex-col sm:flex-row sm:justify-between items-center gap-4 pt-4 border-t mt-auto">
+          {" "}
+          {/* Ensure footer is pushed down */}
+          {/* Previous Button */}
+          <Button
+            variant="outline"
+            onClick={handlePrevPage}
+            disabled={isFirstPage}
+            size="sm"
+            aria-label="Previous step"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+          </Button>
+          {/* Progress Dots */}
+          <div className="flex items-center justify-center gap-1.5">
+            {tutorialPages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => handleGoToPage(index)}
+                className={`h-2 w-2 rounded-full transition-all duration-200 ease-in-out
+                                    ${
+                                      currentPageIndex === index
+                                        ? "w-4 bg-primary scale-110"
+                                        : "bg-muted-foreground/30 hover:bg-muted-foreground/60"
+                                    }`}
+                aria-label={`Go to step ${index + 1}`}
+                aria-current={currentPageIndex === index ? "step" : undefined}
+              />
+            ))}
+          </div>
+          {/* Next/Done Button */}
+          <Button
+            onClick={isLastPage ? handleClose : handleNextPage}
+            size="sm"
+            aria-label={isLastPage ? "Finish tutorial" : "Next step"}
+          >
+            {isLastPage ? (
+              <>
+                Done <Check className="h-4 w-4 ml-1" />
+              </>
+            ) : (
+              <>
+                Next <ChevronRight className="h-4 w-4 ml-1" />
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

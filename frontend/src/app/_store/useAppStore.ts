@@ -22,6 +22,8 @@ interface AppStoreState {
   isLoadingOptions: boolean;
   error: string | null;
   cacheBuster: number | null; // Add cacheBuster to the state
+  toggleSummaryMode: boolean;
+  openSummary: boolean;
 
   // Actions
   // Chat Actions
@@ -47,10 +49,11 @@ interface AppStoreState {
   fetchChatOptions: (userId: string) => Promise<void>;
   addNewChatSession: (userId: string, sessionId: string) => void;
   resetDemoState: () => void;
+  setToggleSummaryMode: (mode: boolean) => void;
+  setOpenSummary: (open: boolean) => void;
 }
 
 export const useAppStore = create<AppStoreState>((set) => ({
-  // Initial State
   messages: [],
   chatData: "",
   isChatLoading: false,
@@ -64,7 +67,9 @@ export const useAppStore = create<AppStoreState>((set) => ({
   chatOptions: [],
   isLoadingOptions: false,
   error: null,
-  cacheBuster: null, // Initialize cacheBuster
+  cacheBuster: null,
+  toggleSummaryMode: false,
+  openSummary: false,
 
   // Actions
   addMessage: (message) =>
@@ -190,4 +195,7 @@ export const useAppStore = create<AppStoreState>((set) => ({
       isChatLoading: false,
     });
   },
+
+  setToggleSummaryMode: (mode) => set({ toggleSummaryMode: mode }),
+  setOpenSummary: (open) => set({ openSummary: open }),
 }));

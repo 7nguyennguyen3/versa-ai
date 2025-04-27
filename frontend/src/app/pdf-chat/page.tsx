@@ -3,11 +3,11 @@
 import axios from "axios";
 import { useCallback } from "react";
 
-import { useAppStore } from "../_store/useAppStore";
-import { useAuthStore } from "../_store/useAuthStore";
 import UniversalChatComponent, {
   SendMessageHandlerParams,
 } from "../_components/chat/UniversalChatComponent";
+import { useAppStore } from "../_store/useAppStore";
+import { useAuthStore } from "../_store/useAuthStore";
 
 const getTokenFromApi = async (): Promise<string | null> => {
   try {
@@ -32,14 +32,14 @@ const PdfChatPage = () => {
 
   const handleAuthenticatedSendMessage = useCallback(
     async (params: SendMessageHandlerParams) => {
-      const { message, pdfId, chatId, model, retrievalMethod, streamHandlers } =
-        params;
+      const { message, pdfId, chatId, streamHandlers } = params;
 
       const authUserId = useAuthStore.getState().userId;
       const currentSelectedChat = useAppStore.getState().selectedChat;
       const currentSelectedModel = useAppStore.getState().selectedModel;
       const currentRetrievalMethod =
         useAppStore.getState().selectedRetrievalMethod;
+      const summaryMode = useAppStore.getState().toggleSummaryMode;
 
       if (!authUserId) {
         streamHandlers.onStreamError("User ID not found. Cannot send message.");
@@ -82,6 +82,7 @@ const PdfChatPage = () => {
           model: currentSelectedModel,
           retrievalMethod: currentRetrievalMethod,
           isNewSession: isNewSessionForThisRequest,
+          summary_mode: summaryMode,
         };
 
         const res = await axios.post(
@@ -102,13 +103,12 @@ const PdfChatPage = () => {
         const streamUrl = `${process.env.NEXT_PUBLIC_CHAT_ENDPOINT}/chat_stream/${sessionIdToUse}`;
         eventSource = new EventSource(streamUrl);
 
-        // --- Handle Stream Events (Keep as is) ---
         let botResponse = "";
         eventSource.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
             if (data.type === "chunk" && data.content) {
-              botResponse += data.content.replace(/<br>/g, "\n"); // Convert back for internal state if needed
+              botResponse += data.content; // Convert back for internal state if needed
               streamHandlers.onChunkReceived(data.content); // Pass content with <br>
             } else if (data.type === "error") {
               console.error("Received error from stream:", data.content);

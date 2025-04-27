@@ -41,12 +41,7 @@ const ChatLoadingOrStreaming: React.FC<ChatLoadingOrStreamingProps> = ({
           </div>
 
           <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm max-w-full">
-            <MarkdownText>
-              {/* Ensure content is treated as string and handle <br> */}
-              {typeof streamingAiResponse === "string"
-                ? streamingAiResponse
-                : ""}
-            </MarkdownText>
+            <MarkdownText>{streamingAiResponse}</MarkdownText>
           </div>
         </div>
       </div>

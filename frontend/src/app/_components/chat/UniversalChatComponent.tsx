@@ -194,7 +194,7 @@ const UniversalChatComponent: React.FC<UniversalChatComponentProps> = ({
       await onSendMessage({
         message: messageToSend,
         pdfId: selectedPdf.pdfId,
-        chatId: currentChatId, // Pass currentChatId from store
+        chatId: currentChatId,
         model: selectedModel,
         retrievalMethod: selectedRetrievalMethod,
         streamHandlers: streamHandlers,
@@ -318,7 +318,9 @@ const UniversalChatComponent: React.FC<UniversalChatComponentProps> = ({
           onClose={() => setIsPdfSidebarOpen(false)}
         />
       )}
-      {openTutorial && <Tutorial setOpenTutorial={setOpenTutorial} />}
+      {openTutorial && (
+        <Tutorial isOpen={openTutorial} setOpenTutorial={setOpenTutorial} />
+      )}
 
       <div className="flex-1 overflow-y-auto p-4 pt-6 custom-scrollbar">
         {" "}
@@ -334,7 +336,7 @@ const UniversalChatComponent: React.FC<UniversalChatComponentProps> = ({
                   ? `Ask about ${selectedPdf.pdfName}`
                   : isDemo
                   ? "Select a demo PDF or start typing"
-                  : "Select a PDF to begin chatting."}
+                  : `Use the (⚙️) icon to select a PDF and begin chatting.`}
               </h3>
               <p className="mt-2 text-gray-600">
                 {selectedPdf &&

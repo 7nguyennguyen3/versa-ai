@@ -9,8 +9,8 @@ export interface UserDetail {
   password?: string;
   createdAt?: Date;
   updatedAt?: Date;
-  monthlyUploadUsage: number; // Track monthly upload usage in bytes
-  monthlyUploadLimit: number; // Track monthly upload limit in bytes
+  monthlyUploadUsage: number;
+  monthlyUploadLimit: number;
 }
 
 export interface AIMessageRequest {
@@ -30,6 +30,7 @@ export interface PDFDocument {
   pdfId: string;
   pdfUrl: string;
   uploadedAt: Date;
+  summary?: string;
   userId?: string;
   pdfName: string;
 }
@@ -55,6 +56,7 @@ export interface PdfOption {
   pdfName: string;
   uploadedAt: string | Date;
   pdfUrl: string;
+  summary: string;
   sizeInMB?: number;
   pageCount?: number;
 }
